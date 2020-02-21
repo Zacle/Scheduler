@@ -10,7 +10,7 @@ import butterknife.Unbinder;
 
 public abstract class BaseFragment extends Fragment implements IView {
 
-    private final String TAG = BaseFragment.class.getSimpleName();
+    private static final String TAG = "BaseFragment";
 
     private BaseActivity mBaseActivity;
     private Unbinder mUnbinder;

@@ -9,7 +9,7 @@ package com.zacle.scheduler.ui.base;
 
 public class BasePresenter<V extends IView> implements IPresenter<V> {
 
-    private final String TAG = BasePresenter.class.getSimpleName();
+    private static final String TAG = "BasePresenter";
 
     private V mView;
 

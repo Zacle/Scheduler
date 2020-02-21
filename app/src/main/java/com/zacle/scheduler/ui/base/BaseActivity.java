@@ -8,7 +8,7 @@ import butterknife.Unbinder;
 
 public abstract class BaseActivity extends AppCompatActivity implements IView, BaseFragment.Callback {
 
-    private final String TAG = BaseActivity.class.getSimpleName();
+    private static final String TAG = "BaseActivity";
 
     private Unbinder mUnbinder;
 
