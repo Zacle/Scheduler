@@ -6,7 +6,7 @@ import android.os.Bundle;
 
 import butterknife.Unbinder;
 
-public abstract class BaseActivity extends AppCompatActivity implements IView, BaseFragment.Callback {
+public abstract class BaseActivity extends AppCompatActivity implements BaseView, BaseFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "BaseActivity";
 

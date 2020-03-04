@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment;
 
 import butterknife.Unbinder;
 
-public abstract class BaseFragment extends Fragment implements IView {
+public abstract class BaseFragment extends Fragment implements BaseView {
 
     private static final String TAG = "BaseFragment";
 
@@ -65,6 +65,8 @@ public abstract class BaseFragment extends Fragment implements IView {
 
     protected abstract void setUp(View view);
 
+    protected abstract void setUp();
+
     @Override
     public void onDestroy() {
         if (mUnbinder != null) {
@@ -73,7 +75,7 @@ public abstract class BaseFragment extends Fragment implements IView {
         super.onDestroy();
     }
 
-    public interface Callback {
+    public interface OnFragmentInteractionListener {
 
         void onFragmentAttached();
 

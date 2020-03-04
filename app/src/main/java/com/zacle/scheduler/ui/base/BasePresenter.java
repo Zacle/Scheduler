@@ -3,11 +3,11 @@ package com.zacle.scheduler.ui.base;
 
 /**
  * Base class that implements the Presenter interface and provides a base implementation for
- * onAttach() and onDetach(). It also handles keeping a reference to the IView that
+ * onAttach() and onDetach(). It also handles keeping a reference to the BaseView that
  * can be accessed from the children classes by calling getMvpView().
  */
 
-public class BasePresenter<V extends IView> implements IPresenter<V> {
+public class BasePresenter<V extends BaseView> implements Presenter<V> {
 
     private static final String TAG = "BasePresenter";
 

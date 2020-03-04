@@ -8,7 +8,7 @@ import androidx.annotation.StringRes;
  * that then usually will be implemented by an Activity or Fragment.
  */
 
-public interface IView {
+public interface BaseView {
 
     void showMessage(String message);
 
