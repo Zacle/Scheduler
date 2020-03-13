@@ -9,6 +9,7 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.zacle.scheduler.data.database.entity.EventEntity;
+import com.zacle.scheduler.data.database.model.Event;
 
 import java.util.Date;
 import java.util.List;
@@ -21,23 +22,26 @@ import java.util.List;
 public interface EventDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(EventEntity event);
+    void insert(Event event);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertEvents(List<Event> event);
 
     @Update
-    void update(EventEntity event);
+    void update(Event event);
 
     @Delete
-    void delete(EventEntity event);
+    void delete(Event event);
 
     @Query("DELETE FROM events")
     void deleteAll();
 
     @Query("SELECT * FROM events WHERE time >= :date AND isCompleted = 0")
-    LiveData<List<EventEntity>> getFutureEvents(Date date);
+    LiveData<List<Event>> getFutureEvents(Date date);
 
     @Query("SELECT * FROM events WHERE time < :date OR isCompleted = 1")
-    LiveData<List<EventEntity>> getPastEvents(Date date);
+    LiveData<List<Event>> getPastEvents(Date date);
 
     @Query("SELECT * FROM events WHERE id = :eventId")
-    LiveData<EventEntity> getEvent(int eventId);
+    LiveData<Event> getEvent(int eventId);
 }
