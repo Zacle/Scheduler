@@ -1,4 +1,4 @@
-package com.zacle.scheduler.di;
+package com.zacle.scheduler.di.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

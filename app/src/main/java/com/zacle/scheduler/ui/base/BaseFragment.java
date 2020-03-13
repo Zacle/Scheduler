@@ -7,8 +7,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import butterknife.Unbinder;
+import dagger.android.support.DaggerFragment;
 
-public abstract class BaseFragment extends Fragment implements BaseView {
+public abstract class BaseFragment extends DaggerFragment {
 
     private static final String TAG = "BaseFragment";
 
@@ -20,40 +21,21 @@ public abstract class BaseFragment extends Fragment implements BaseView {
         super.onCreate(savedInstanceState);
     }
 
-    @Override
-    public void showMessage(String message) {
+    public abstract void showMessage(String message);
 
-    }
+    public abstract void showMessage(int resId);
 
-    @Override
-    public void showMessage(int resId) {
+    public abstract void onError(String error);
 
-    }
+    public abstract void onError(int resId);
 
-    @Override
-    public void onError(String error) {
-
-    }
-
-    @Override
-    public void onError(int resId) {
-
-    }
-
-    @Override
     public boolean isNetworkConnected() {
         return false;
     }
 
-    @Override
-    public void showSnackBar(String message) {
+    public abstract void showSnackBar(String message);
 
-    }
-
-    @Override
-    public void showSnackBar(int resId) {
-
-    }
+    public abstract void showSnackBar(int resId);
 
     public BaseActivity getBaseActivity() {
         return mBaseActivity;

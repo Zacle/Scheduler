@@ -5,8 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 import butterknife.Unbinder;
+import dagger.android.support.DaggerAppCompatActivity;
 
-public abstract class BaseActivity extends AppCompatActivity implements BaseView, BaseFragment.OnFragmentInteractionListener {
+public abstract class BaseActivity extends DaggerAppCompatActivity implements BaseFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "BaseActivity";
 
@@ -15,41 +16,6 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public void showMessage(String message) {
-
-    }
-
-    @Override
-    public void showMessage(int resId) {
-
-    }
-
-    @Override
-    public void onError(String error) {
-
-    }
-
-    @Override
-    public void onError(int resId) {
-
-    }
-
-    @Override
-    public boolean isNetworkConnected() {
-        return false;
-    }
-
-    @Override
-    public void showSnackBar(String message) {
-
-    }
-
-    @Override
-    public void showSnackBar(int resId) {
-
     }
 
     public void setUnbinder(Unbinder unbinder) {

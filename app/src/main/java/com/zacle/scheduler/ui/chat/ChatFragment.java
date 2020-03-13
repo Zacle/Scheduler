@@ -1,19 +1,14 @@
-package com.zacle.scheduler.ui.main;
+package com.zacle.scheduler.ui.chat;
 
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.ui.base.BaseFragment;
@@ -22,9 +17,7 @@ import com.zacle.scheduler.viewmodel.ViewModelProviderFactory;
 import javax.inject.Inject;
 
 
-public class MainFragment extends BaseFragment {
-
-    private static final String TAG = "MainFragment";
+public class ChatFragment extends BaseFragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -34,14 +27,14 @@ public class MainFragment extends BaseFragment {
     private String mParam1;
     private String mParam2;
 
-    private MainViewModel viewModel;
+    private ChatViewModel viewModel;
 
     @Inject
     ViewModelProviderFactory providerFactory;
 
     private OnFragmentInteractionListener mListener;
 
-    public MainFragment() {
+    public ChatFragment() {
         // Required empty public constructor
     }
 
@@ -54,8 +47,8 @@ public class MainFragment extends BaseFragment {
      * @return A new instance of fragment MainFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MainFragment newInstance(String param1, String param2) {
-        MainFragment fragment = new MainFragment();
+    public static ChatFragment newInstance(String param1, String param2) {
+        ChatFragment fragment = new ChatFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -73,18 +66,16 @@ public class MainFragment extends BaseFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_main, container, false);
-    }
-
-    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        Log.d(TAG, "onActivityCreated: created");
+        viewModel = ViewModelProviders.of(this, providerFactory).get(ChatViewModel.class);
+    }
 
-        viewModel = ViewModelProviders.of(this, providerFactory).get(MainViewModel.class);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
