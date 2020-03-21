@@ -5,7 +5,7 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.zacle.scheduler.data.database.model.Event;
+import com.zacle.scheduler.data.database.entity.Event;
 import com.zacle.scheduler.repository.EventRepository;
 import com.zacle.scheduler.utils.Resource;
 

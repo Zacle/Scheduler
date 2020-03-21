@@ -1,12 +1,14 @@
 package com.zacle.scheduler.repository;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
 import com.zacle.scheduler.data.database.SchedulerDatabase;
 import com.zacle.scheduler.data.database.dao.EventDao;
-import com.zacle.scheduler.data.database.model.Event;
+import com.zacle.scheduler.data.database.entity.Event;
 import com.zacle.scheduler.utils.AppExecutors;
 import com.zacle.scheduler.utils.Resource;
 
@@ -21,6 +23,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class EventRepository {
+    private static final String TAG = "EventRepository";
 
     private final SchedulerDatabase database;
     private final EventDao eventDao;
@@ -49,7 +52,8 @@ public class EventRepository {
             @NonNull
             @Override
             protected LiveData<List<Event>> loadFromDb() {
-                return eventDao.getFutureEvents(new Date());
+                Log.d(TAG, "loadFromDb: date = " + (new Date()).toString());
+                return eventDao.getFutureEvents();
             }
         }.asLiveData();
     }
@@ -112,7 +116,9 @@ public class EventRepository {
             @NonNull
             @Override
             protected LiveData<Event> loadFromDb() {
-                return eventDao.getEvent(event.getId());
+                LiveData<Event> deleted =  eventDao.getEvent(event.getId());
+                eventDao.delete(event);
+                return deleted;
             }
         }.asLiveData();
     }
@@ -133,7 +139,9 @@ public class EventRepository {
             @NonNull
             @Override
             protected LiveData<List<Event>> loadFromDb() {
-                return eventDao.getFutureEvents(new Date());
+                LiveData<List<Event>> deleted = eventDao.getFutureEvents();
+                eventDao.deleteAll();
+                return deleted;
             }
         }.asLiveData();
     }
@@ -154,7 +162,7 @@ public class EventRepository {
             @NonNull
             @Override
             protected LiveData<List<Event>> loadFromDb() {
-                return eventDao.getPastEvents(new Date());
+                return eventDao.getPastEvents();
             }
         }.asLiveData();
     }

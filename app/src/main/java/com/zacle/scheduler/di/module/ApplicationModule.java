@@ -1,5 +1,8 @@
 package com.zacle.scheduler.di.module;
 
+import com.zacle.scheduler.utils.AppExecutors;
+
+
 import dagger.Module;
 import dagger.Provides;
 
@@ -9,4 +12,9 @@ import dagger.Provides;
 
 @Module
 public class ApplicationModule {
+
+    @Provides
+    static AppExecutors provideAppExecutors() {
+        return new AppExecutors();
+    }
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="4dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="2dp"
+            android:id="@+id/schedule_status"
+            android:src="@drawable/ic_alarm"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:hint="@string/schedules_first_text"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@id/schedule_status"
+            android:layout_toRightOf="@id/schedule_status"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:id="@+id/event_name"/>
+
+        <TextView
+            android:id="@+id/event_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/event_name"
+            android:layout_marginStart="8dp"
+            android:layout_toEndOf="@id/schedule_status"
+            tools:hint="@string/schedules_second_text"
+            android:textSize="15sp"
+            android:layout_marginLeft="8dp"
+            android:layout_toRightOf="@id/schedule_status" />
+
+        <ImageView
+            android:id="@+id/lunch_event"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_launch"
+            android:layout_alignParentRight="true" />
+
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

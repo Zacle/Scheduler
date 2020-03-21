@@ -4,7 +4,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-import com.zacle.scheduler.data.database.model.Event;
+import com.zacle.scheduler.utils.EventStatus;
 
 import java.util.Date;
 
@@ -13,27 +13,29 @@ import java.util.Date;
  */
 
 @Entity(tableName = "events")
-public class EventEntity implements Event {
+public class Event {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
+    private String name;
     private Date time;
     private String source;
     private String destination;
     private boolean isCompleted;
+    private EventStatus status;
 
-    public EventEntity() {}
+    public Event() {}
 
     @Ignore
-    public EventEntity(int id, Date time, String source, String destination, boolean isCompleted) {
-        this.id = id;
+    public Event(String name, Date time, String source, String destination, boolean isCompleted, EventStatus status) {
+        this.name = name;
         this.time = time;
         this.source = source;
         this.destination = destination;
         this.isCompleted = isCompleted;
+        this.status = status;
     }
 
-    @Override
     public int getId() {
         return id;
     }
@@ -42,7 +44,14 @@ public class EventEntity implements Event {
         this.id = id;
     }
 
-    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Date getTime() {
         return time;
     }
@@ -51,7 +60,6 @@ public class EventEntity implements Event {
         this.time = time;
     }
 
-    @Override
     public String getSource() {
         return source;
     }
@@ -60,7 +68,6 @@ public class EventEntity implements Event {
         this.source = source;
     }
 
-    @Override
     public String getDestination() {
         return destination;
     }
@@ -69,12 +76,19 @@ public class EventEntity implements Event {
         this.destination = destination;
     }
 
-    @Override
     public boolean isCompleted() {
         return isCompleted;
     }
 
     public void setCompleted(boolean completed) {
         isCompleted = completed;
+    }
+
+    public EventStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EventStatus status) {
+        this.status = status;
     }
 }

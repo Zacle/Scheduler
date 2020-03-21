@@ -8,4 +8,8 @@
     <string name="schedule">Schedules</string>
     <string name="chats">Chats</string>
 
+    // Hints
+    <string name="schedules_first_text">Events name</string>
+    <string name="schedules_second_text">Wed 18/03/20, 04:30 PM</string>
+
 </resources>
