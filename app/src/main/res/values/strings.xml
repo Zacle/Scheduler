@@ -21,7 +21,7 @@
     <string name="save">Save</string>
 
     // API
-    <string name="google_api">AIzaSyB16RVx2CJNxAH0JByNTOPevtyXB6YpISI</string>
+    <string name="google_api"></string>
 
     // Notification Dialog
     <string name="ok">OK</string>
