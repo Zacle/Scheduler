@@ -19,19 +19,24 @@ public class Event {
     private int id;
     private String name;
     private Date time;
-    private String source;
-    private String destination;
+    private double sourceLat;
+    private double sourceLong;
+    private double destinationLat;
+    private double destinationLong;
     private boolean isCompleted;
     private EventStatus status;
 
     public Event() {}
 
     @Ignore
-    public Event(String name, Date time, String source, String destination, boolean isCompleted, EventStatus status) {
+    public Event(String name, Date time, double sourceLat, double sourceLong,
+                 double destinationLat, double destinationLong, boolean isCompleted, EventStatus status) {
         this.name = name;
         this.time = time;
-        this.source = source;
-        this.destination = destination;
+        this.sourceLat = sourceLat;
+        this.sourceLong = sourceLong;
+        this.destinationLat = destinationLat;
+        this.destinationLong = destinationLong;
         this.isCompleted = isCompleted;
         this.status = status;
     }
@@ -60,20 +65,36 @@ public class Event {
         this.time = time;
     }
 
-    public String getSource() {
-        return source;
+    public double getSourceLat() {
+        return sourceLat;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setSourceLat(double sourceLat) {
+        this.sourceLat = sourceLat;
     }
 
-    public String getDestination() {
-        return destination;
+    public double getSourceLong() {
+        return sourceLong;
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
+    public void setSourceLong(double sourceLong) {
+        this.sourceLong = sourceLong;
+    }
+
+    public double getDestinationLat() {
+        return destinationLat;
+    }
+
+    public void setDestinationLat(double destinationLat) {
+        this.destinationLat = destinationLat;
+    }
+
+    public double getDestinationLong() {
+        return destinationLong;
+    }
+
+    public void setDestinationLong(double destinationLong) {
+        this.destinationLong = destinationLong;
     }
 
     public boolean isCompleted() {

@@ -13,7 +13,7 @@ import com.zacle.scheduler.data.database.entity.Event;
  * Main database of the app
  */
 
-@Database(entities = {Event.class}, version = 1, exportSchema = false)
+@Database(entities = {Event.class}, version = 2, exportSchema = false)
 @TypeConverters({DateConverter.class, StatusConverter.class})
 public abstract class SchedulerDatabase extends RoomDatabase {
 

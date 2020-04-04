@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dp">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/name_text_input"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:startIconDrawable="@drawable/ic_create"
+        app:startIconContentDescription="@string/event_name_label"
+        app:endIconMode="clear_text"
+        app:errorEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/event_name_label" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_margin="8dp"/>
+
+    <Button
+        android:id="@+id/select_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_date"
+        app:icon="@drawable/ic_date_range"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon" />
+
+    <Button
+        android:id="@+id/select_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_time"
+        app:icon="@drawable/ic_alarm"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_margin="8dp"/>
+
+    <Button
+        android:id="@+id/select_source"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_source"
+        app:icon="@drawable/ic_place"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon" />
+
+    <Button
+        android:id="@+id/select_destination"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_destination"
+        app:icon="@drawable/ic_place"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_margin="8dp"/>
+
+    <Button
+        android:id="@+id/add_notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/notification"
+        app:icon="@drawable/ic_notifications"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_margin="8dp"/>
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/completed"
+        android:id="@+id/completed"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"/>
+
+    <Button
+        android:id="@+id/save_event"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save" />
+
+</LinearLayout>

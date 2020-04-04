@@ -39,8 +39,10 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
         public boolean areContentsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
             return oldItem.getName().equals(newItem.getName()) &&
                     oldItem.getTime().getTime() == newItem.getTime().getTime() &&
-                    oldItem.getSource().equals(newItem.getSource()) &&
-                    oldItem.getDestination().equals(newItem.getDestination()) &&
+                    Double.compare(oldItem.getSourceLat(), newItem.getSourceLat()) == 0 &&
+                    Double.compare(oldItem.getSourceLong(), newItem.getSourceLong()) == 0 &&
+                    Double.compare(oldItem.getDestinationLat(), newItem.getDestinationLat()) == 0 &&
+                    Double.compare(oldItem.getDestinationLong(), newItem.getDestinationLong()) == 0 &&
                     oldItem.getStatus().getCode() == newItem.getStatus().getCode();
         }
     };

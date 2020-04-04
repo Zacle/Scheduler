@@ -1,23 +1,22 @@
 package com.zacle.scheduler.ui.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zacle.scheduler.R;
+import com.zacle.scheduler.ui.addOrEdit.AddEditActivity;
 import com.zacle.scheduler.ui.base.BaseFragment;
 import com.zacle.scheduler.viewmodel.ViewModelProviderFactory;
 
@@ -38,6 +37,8 @@ public class MainFragment extends BaseFragment {
 
     @BindView(R.id.schedules)
     public RecyclerView recyclerView;
+    @BindView(R.id.add_event)
+    public FloatingActionButton floatingActionButton;
 
     @Inject
     ViewModelProviderFactory providerFactory;
@@ -57,6 +58,7 @@ public class MainFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.fragment_main, container, false);
+        Log.d(TAG, "onCreateView: created");
         setUp(view);
         return view;
     }
@@ -132,8 +134,16 @@ public class MainFragment extends BaseFragment {
 
     @Override
     protected void setUp() {
+        initFloatingActionButton();
         initRecyclerView();
         subcribeObservers();
+    }
+
+    private void initFloatingActionButton() {
+        floatingActionButton.setOnClickListener(view -> {
+            Intent intent = AddEditActivity.newIntent(getActivity());
+            startActivity(intent);
+        });
     }
 
     private void initRecyclerView() {
@@ -145,6 +155,7 @@ public class MainFragment extends BaseFragment {
 
     private void subcribeObservers() {
         viewModel = ViewModelProviders.of(this, providerFactory).get(MainViewModel.class);
+        Log.d(TAG, "subcribeObservers: initialized");
 
         viewModel.getFutureEvents().observe(this, resource -> {
             if (resource != null) {

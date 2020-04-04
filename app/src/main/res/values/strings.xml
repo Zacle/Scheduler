@@ -11,5 +11,29 @@
     // Hints
     <string name="schedules_first_text">Events name</string>
     <string name="schedules_second_text">Wed 18/03/20, 04:30 PM</string>
+    <string name="event_name_label">Name</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_time">Select Time</string>
+    <string name="select_source">Select Source Location</string>
+    <string name="select_destination">Select Destination Location</string>
+    <string name="notification">Add Notification</string>
+    <string name="completed">Completed</string>
+    <string name="save">Save</string>
+
+    // API
+    <string name="google_api">AIzaSyB16RVx2CJNxAH0JByNTOPevtyXB6YpISI</string>
+
+    // Notification Dialog
+    <string name="ok">OK</string>
+    <string name="cancel">CANCEL</string>
+    <string name="title">Custom Notification</string>
+    <string name="minutes">Minutes</string>
+    <string name="hours">Hours</string>
+
+    // Add or Edit event
+    <string name="enter_name">Please enter event name</string>
+    <string name="select_date_or_time">Please select date and time</string>
+    <string name="select_source_location">Please select source location</string>
+    <string name="select_destination_location">Please select destination location</string>
 
 </resources>
