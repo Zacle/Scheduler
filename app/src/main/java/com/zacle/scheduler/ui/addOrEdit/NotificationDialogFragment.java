@@ -16,11 +16,13 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.zacle.scheduler.R;
+import com.zacle.scheduler.utils.AppConstants;
 
 public class NotificationDialogFragment extends DialogFragment {
 
     private static final String TAG = "NotificationDialogFragm";
-    public final String MINUTES = "minutes";
+    private static final String NOTIFY = "com.zacle.scheduler.ui.addOrEdit.notification";
+    public static final String NOTIFY_SETTINGS = "com.zacle.scheduler.ui.addOrEdit.notification_time";
 
     private TextInputLayout time;
     private RadioGroup time_settings;
@@ -28,6 +30,18 @@ public class NotificationDialogFragment extends DialogFragment {
     private RadioButton hours;
     private TextView ok_button;
     private TextView cancel_button;
+
+    private int notification_time;
+    private String notification_settings;
+
+    public static NotificationDialogFragment newInstance(int notification_time, String notification_settings) {
+        NotificationDialogFragment dialogFragment = new NotificationDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt(NOTIFY, notification_time);
+        args.putString(NOTIFY_SETTINGS, notification_settings);
+        dialogFragment.setArguments(args);
+        return dialogFragment;
+    }
 
     public interface OnInputSelected{
         void sendInput(String time, String time_settings);
@@ -42,7 +56,7 @@ public class NotificationDialogFragment extends DialogFragment {
 
         setUp(view);
 
-        time.getEditText().setText("5");
+        settings(notification_time, notification_settings);
 
         cancel_button.setOnClickListener(v -> getDialog().dismiss());
 
@@ -50,14 +64,24 @@ public class NotificationDialogFragment extends DialogFragment {
             int id = time_settings.getCheckedRadioButtonId();
             String value = time.getEditText().getText().toString();
             if (id == minutes.getId())
-                onInputSelected.sendInput(value, MINUTES);
+                onInputSelected.sendInput(value, AppConstants.MINUTES);
             else
-                onInputSelected.sendInput(value, "hours");
+                onInputSelected.sendInput(value, AppConstants.HOURS);
 
             getDialog().dismiss();
         });
 
         return view;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            notification_time = args.getInt(NOTIFY);
+            notification_settings = args.getString(NOTIFY_SETTINGS);
+        }
     }
 
     private void setUp(View view) {
@@ -76,6 +100,17 @@ public class NotificationDialogFragment extends DialogFragment {
             onInputSelected = (OnInputSelected) getTargetFragment();
         } catch (ClassCastException e){
             Log.e(TAG, "onAttach: ClassCastException : " + e.getMessage() );
+        }
+    }
+
+    public void settings(int number, String setting) {
+        time.getEditText().setText("" + number);
+        Log.d(TAG, "settings: " + setting);
+
+        if (setting.equals(AppConstants.MINUTES)) {
+            time_settings.check(R.id.notification_minutes);
+        } else {
+            time_settings.check(R.id.notification_hours);
         }
     }
 }

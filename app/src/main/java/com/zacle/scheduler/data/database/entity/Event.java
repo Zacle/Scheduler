@@ -23,20 +23,25 @@ public class Event {
     private double sourceLong;
     private double destinationLat;
     private double destinationLong;
+    private int notification_time;
+    private String notification_settings;
     private boolean isCompleted;
     private EventStatus status;
 
     public Event() {}
 
     @Ignore
-    public Event(String name, Date time, double sourceLat, double sourceLong,
-                 double destinationLat, double destinationLong, boolean isCompleted, EventStatus status) {
+    public Event(String name, Date time, double sourceLat, double sourceLong, double destinationLat,
+                 double destinationLong, int notification_time, String notification_settings,
+                 boolean isCompleted, EventStatus status) {
         this.name = name;
         this.time = time;
         this.sourceLat = sourceLat;
         this.sourceLong = sourceLong;
         this.destinationLat = destinationLat;
         this.destinationLong = destinationLong;
+        this.notification_time = notification_time;
+        this.notification_settings = notification_settings;
         this.isCompleted = isCompleted;
         this.status = status;
     }
@@ -95,6 +100,22 @@ public class Event {
 
     public void setDestinationLong(double destinationLong) {
         this.destinationLong = destinationLong;
+    }
+
+    public int getNotification_time() {
+        return notification_time;
+    }
+
+    public void setNotification_time(int notification_time) {
+        this.notification_time = notification_time;
+    }
+
+    public String getNotification_settings() {
+        return notification_settings;
+    }
+
+    public void setNotification_settings(String notification_settings) {
+        this.notification_settings = notification_settings;
     }
 
     public boolean isCompleted() {

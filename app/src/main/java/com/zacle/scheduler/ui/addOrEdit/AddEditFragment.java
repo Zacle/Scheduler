@@ -30,6 +30,7 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.ui.base.BaseFragment;
+import com.zacle.scheduler.utils.AppConstants;
 import com.zacle.scheduler.utils.DateUtil;
 
 import java.io.IOException;
@@ -60,6 +61,7 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
     private static final String DESTINATION_LAT = "com.zacle.scheduler.ui.addOrEdit.destinationLat";
     private static final String DESTINATION_LONG = "com.zacle.scheduler.ui.addOrEdit.destinationLong";
     private static final String NOTIFY = "com.zacle.scheduler.ui.addOrEdit.notify";
+    public static final String NOTIFY_SETTINGS = "com.zacle.scheduler.ui.addOrEdit.notify_time";
     private static final String STATUS = "com.zacle.scheduler.ui.addOrEdit.status";
 
     private final int AUTOCOMPLETE_REQUEST_CODE_SOURCE = 770;
@@ -79,6 +81,8 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
     private int newYear = INIT;
     private int newMonth = INIT;
     private int newDay = INIT;
+    private int notification_time = 30;
+    private String notification_settings = "minutes";
     private boolean sourceModified = false;
     private boolean destinationModified = false;
 
@@ -123,7 +127,8 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
      * @return A new instance of fragment MainFragment.
      */
     public static AddEditFragment newInstance(int id, String name, long date, double sourceLat,
-                                              double sourceLong, double destinationLat, double destinationLong, int status) {
+                                              double sourceLong, double destinationLat, double destinationLong,
+                                              int notification_time, String notification_settings, int status) {
         AddEditFragment fragment = new AddEditFragment();
         Bundle args = new Bundle();
         args.putInt(ID, id);
@@ -133,6 +138,8 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         args.putDouble(SOURCE_LONG, sourceLong);
         args.putDouble(DESTINATION_LAT, destinationLat);
         args.putDouble(DESTINATION_LONG, destinationLong);
+        args.putInt(NOTIFY, notification_time);
+        args.putString(NOTIFY_SETTINGS, notification_settings);
         args.putInt(STATUS, status);
         fragment.setArguments(args);
         return fragment;
@@ -150,6 +157,8 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
             sourceLong = bundle.getDouble(SOURCE_LONG);
             destinationLat = bundle.getDouble(DESTINATION_LAT);
             destinationLong = bundle.getDouble(DESTINATION_LONG);
+            notification_time = bundle.getInt(NOTIFY);
+            notification_settings = bundle.getString(NOTIFY_SETTINGS);
             status = bundle.getInt(STATUS);
         }
     }
@@ -166,13 +175,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         setUp(view);
         setUp();
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (saveEventListener != null) {
-
-        }
     }
 
     @Override
@@ -236,6 +238,7 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
             name_text.getEditText().setText(name);
             selected_date.setText(DateUtil.formatDate(date));
             selected_time.setText(DateUtil.formatTime(date));
+            notification.setText(notification_time + " " + getTimePlural(notification_settings) + " before");
             setSourceLocation();
             setDestinationLocation();
             setDate();
@@ -369,7 +372,7 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
 
     @OnClick(R.id.add_notification)
     public void setNotificationTime() {
-        NotificationDialogFragment notificationDialogFragment = new NotificationDialogFragment();
+        NotificationDialogFragment notificationDialogFragment = NotificationDialogFragment.newInstance(notification_time, notification_settings);
         notificationDialogFragment.setTargetFragment(AddEditFragment.this, 1);
         notificationDialogFragment.show(getActivity().getSupportFragmentManager(), "NotificationDialogFragment");
     }
@@ -428,11 +431,32 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
             return;
         }
 
+        if (id == INIT) {
+            saveEventListener.save(name, date, sourceLat, sourceLong, destinationLat, destinationLong, status, notification_time, notification_settings);
+        } else {
+            saveEventListener.save(id, name, date, sourceLat, sourceLong, destinationLat, destinationLong, status, notification_time, notification_settings);
+        }
+
     }
 
     @Override
     public void sendInput(String time, String time_settings) {
-        notification.setText(time + " " + time_settings + " before");
+
+        try {
+            notification_time = Integer.parseInt(time);
+        } catch (NumberFormatException nf) {
+            Log.d(TAG, "sendInput: parse exception");
+        }
+        notification_settings = time_settings;
+
+        notification.setText(time + " " + getTimePlural(time_settings) + " before");
+    }
+
+    private String getTimePlural(String time) {
+        if (time.equals(AppConstants.MINUTES)) {
+            return (notification_time == 1) ? "minute" : time;
+        }
+        return (notification_time == 1) ? "hour" : time;
     }
 
     private boolean checkAndSaveName() {
@@ -449,26 +473,33 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         if (validate < currentTime) {
             return false;
         }
-        if (id != INIT) {
-            status = (validate > date) ? 0 : 1;
-        }
         date = validate;
         return true;
     }
 
+    // TODO modify method
     private boolean checkSource() {
-        return sourceModified;
+        sourceLat = 13.90376;
+        sourceLong = 42.90605;
+        return true;
+//        return sourceModified;
     }
 
+    // TODO modify method
     private boolean checkDestination() {
-        return destinationModified;
+        destinationLat = 68.92495;
+        destinationLong = -143.81223;
+        return true;
+//        return destinationModified;
     }
 
     public interface OnSaveEventListener {
-        public void save(int id, String name, long date, double sourceLat,
-                         double sourceLong, double destinationLat, double destinationLong, int status);
+        void save(int id, String name, long date, double sourceLat,
+                  double sourceLong, double destinationLat, double destinationLong, int status,
+                  int notification_time, String notification_settings);
 
-        public void save(String name, long date, double sourceLat,
-                         double sourceLong, double destinationLat, double destinationLong, int status);
+        void save(String name, long date, double sourceLat,
+                         double sourceLong, double destinationLat, double destinationLong, int status,
+                         int notification_time, String notification_settings);
     }
 }

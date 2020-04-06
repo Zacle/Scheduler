@@ -72,11 +72,11 @@ public class DatabaseModule {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            eventDao.insert(new Event("First Event", getDate(2020, 3, 21, 12, 30), 13.90376, 42.90605, -14.39926, -14.39926, false, COMING));
-            eventDao.insert(new Event("Second Event", getDate(2020, 3, 22, 12, 30), 34.34270, 110.96384, -3.92924, 25.36992, false, COMING));
-            eventDao.insert(new Event("Third Event", getDate(2020, 3, 23, 12, 30), 61.44640, 160.23139, 22.52265, 29.83466, false, COMING));
-            eventDao.insert(new Event("Fourth Event", getDate(2020, 3, 24, 12, 30), -23.06563, 47.31244, 68.92495, -143.81223, false, COMING));
-            eventDao.insert(new Event("Fifth Event", getDate(2020, 3, 25, 12, 30), 27.31039, 107.75355, -15.26570, 131.02039, false, COMING));
+            eventDao.insert(new Event("First Event", getDate(2020, 3, 21, 12, 30), 13.90376, 42.90605, -14.39926, -14.39926, 10, AppConstants.MINUTES, false, COMING));
+            eventDao.insert(new Event("Second Event", getDate(2020, 3, 22, 12, 30), 34.34270, 110.96384, -3.92924, 25.36992, 30, AppConstants.MINUTES, false, COMING));
+            eventDao.insert(new Event("Third Event", getDate(2020, 3, 23, 12, 30), 61.44640, 160.23139, 22.52265, 29.83466, 1, AppConstants.HOURS, false, COMING));
+            eventDao.insert(new Event("Fourth Event", getDate(2020, 3, 24, 12, 30), -23.06563, 47.31244, 68.92495, -143.81223, 2, AppConstants.HOURS, false, COMING));
+            eventDao.insert(new Event("Fifth Event", getDate(2020, 3, 25, 12, 30), 27.31039, 107.75355, -15.26570, 131.02039, 30, AppConstants.MINUTES, false, COMING));
             return null;
         }
 

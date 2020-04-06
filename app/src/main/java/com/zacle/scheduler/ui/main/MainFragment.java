@@ -8,17 +8,27 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zacle.scheduler.R;
+import com.zacle.scheduler.data.database.entity.Event;
+import com.zacle.scheduler.service.alarm.Alarm;
+import com.zacle.scheduler.service.alarm.EventAlarm;
 import com.zacle.scheduler.ui.addOrEdit.AddEditActivity;
 import com.zacle.scheduler.ui.base.BaseFragment;
+import com.zacle.scheduler.utils.EventStatus;
 import com.zacle.scheduler.viewmodel.ViewModelProviderFactory;
+
+import java.util.Date;
 
 import javax.inject.Inject;
 
@@ -26,10 +36,24 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
+import static android.app.Activity.RESULT_OK;
+import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.DESTINATION_LAT;
+import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.DESTINATION_LONG;
+import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.NOTIFY;
+import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.NOTIFY_SETTINGS;
+import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.SOURCE_LAT;
+import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.SOURCE_LONG;
+import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.STATUS;
+import static com.zacle.scheduler.utils.EventStatus.COMING;
+import static com.zacle.scheduler.utils.EventStatus.RUNNING;
 
+// TODO refactor
 public class MainFragment extends BaseFragment {
 
     private static final String TAG = "MainFragment";
+
+    public static final int ADD_EVENT_REQUEST = 1;
+    public static final int UPDATE_EVENT_REQUEST = 2;
 
     private MainViewModel viewModel;
     private Unbinder unbinder;
@@ -70,13 +94,6 @@ public class MainFragment extends BaseFragment {
         Log.d(TAG, "onActivityCreated: created");
 
         setUp();
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-
-        }
     }
 
     @Override
@@ -136,13 +153,35 @@ public class MainFragment extends BaseFragment {
     protected void setUp() {
         initFloatingActionButton();
         initRecyclerView();
-        subcribeObservers();
+        subscribeObservers();
+        initSwipe();
+    }
+
+    private void initSwipe() {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                Event event = adapter.getEventAt(viewHolder.getAdapterPosition());
+
+                viewModel.delete(event);
+
+                Alarm alarm = new EventAlarm(getActivity(), event.getTime().getTime(), event.getNotification_time(), event.getNotification_settings());
+                alarm.cancelAlarm(event.getId());
+
+                Toast.makeText(getActivity(), "Event deleted", Toast.LENGTH_SHORT).show();
+            }
+        }).attachToRecyclerView(recyclerView);
     }
 
     private void initFloatingActionButton() {
         floatingActionButton.setOnClickListener(view -> {
             Intent intent = AddEditActivity.newIntent(getActivity());
-            startActivity(intent);
+            startActivityForResult(intent, ADD_EVENT_REQUEST);
         });
     }
 
@@ -151,28 +190,82 @@ public class MainFragment extends BaseFragment {
         recyclerView.setHasFixedSize(true);
         adapter = new EventAdapter();
         recyclerView.setAdapter(adapter);
+        adapter.setOnItemClickListener(event -> {
+            Intent intent = AddEditActivity.newIntent(getActivity(), event.getId(), event.getName(), event.getTime().getTime(),
+                                                        event.getSourceLat(), event.getSourceLong(), event.getDestinationLat(),
+                                                        event.getDestinationLong(), event.getNotification_time(),
+                                                        event.getNotification_settings(), COMING);
+
+            startActivityForResult(intent, UPDATE_EVENT_REQUEST);
+        });
     }
 
-    private void subcribeObservers() {
+    private void subscribeObservers() {
         viewModel = ViewModelProviders.of(this, providerFactory).get(MainViewModel.class);
-        Log.d(TAG, "subcribeObservers: initialized");
+        Log.d(TAG, "subscribeObservers: initialized");
 
         viewModel.getFutureEvents().observe(this, resource -> {
             if (resource != null) {
                 switch(resource.status) {
                     case LOADING:
-                        Log.d(TAG, "subcribeObservers: LOADING...");
+                        Log.d(TAG, "subscribeObservers: LOADING...");
                         break;
                     case SUCCESS:
-                        Log.d(TAG, "subcribeObservers: SUCCESS");
-                        Log.d(TAG, "subcribeObservers: list length = " + resource.data.size());
+                        Log.d(TAG, "subscribeObservers: SUCCESS");
+                        Log.d(TAG, "subscribeObservers: list length = " + resource.data.size());
                         adapter.submitList(resource.data);
                         break;
                     case ERROR:
-                        Log.e(TAG, "subcribeObservers: ERROR: " + resource.message);
+                        Log.e(TAG, "subscribeObservers: ERROR: " + resource.message);
                         break;
                 }
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        int INIT = -1;
+
+        if (requestCode == ADD_EVENT_REQUEST && resultCode == RESULT_OK) {
+            String name = data.getStringExtra(AddEditActivity.NAME);
+            long date = data.getLongExtra(AddEditActivity.DATE, INIT);
+            double sourceLat = data.getDoubleExtra(SOURCE_LAT, INIT);
+            double sourceLong = data.getDoubleExtra(SOURCE_LONG, INIT);
+            double destinationLat = data.getDoubleExtra(DESTINATION_LAT, INIT);
+            double destinationLong = data.getDoubleExtra(DESTINATION_LONG, INIT);
+            int status = data.getIntExtra(STATUS, 0);
+            int notification_time = data.getIntExtra(NOTIFY, INIT);
+            String notification_settings = data.getStringExtra(NOTIFY_SETTINGS);
+
+            Event event = new Event(name, new Date(date), sourceLat, sourceLong, destinationLat, destinationLong, notification_time, notification_settings, false, COMING);
+            viewModel.insert(event);
+
+            Alarm alarm = new EventAlarm(getActivity(), date, notification_time, notification_settings);
+            alarm.startAlarm(event.getId(), name);
+            Toast.makeText(getActivity(), "Event inserted", Toast.LENGTH_SHORT).show();
+
+        } else if (requestCode == UPDATE_EVENT_REQUEST && resultCode == RESULT_OK) {
+            int id = data.getIntExtra(AddEditActivity.ID, INIT);
+            String name = data.getStringExtra(AddEditActivity.NAME);
+            long date = data.getLongExtra(AddEditActivity.DATE, INIT);
+            double sourceLat = data.getDoubleExtra(SOURCE_LAT, INIT);
+            double sourceLong = data.getDoubleExtra(SOURCE_LONG, INIT);
+            double destinationLat = data.getDoubleExtra(DESTINATION_LAT, INIT);
+            double destinationLong = data.getDoubleExtra(DESTINATION_LONG, INIT);
+            int status = data.getIntExtra(STATUS, 0);
+            int notification_time = data.getIntExtra(NOTIFY, INIT);
+            String notification_settings = data.getStringExtra(NOTIFY_SETTINGS);
+
+            Event event = new Event(name, new Date(date), sourceLat, sourceLong, destinationLat, destinationLong, notification_time, notification_settings, false, (status == 0) ? COMING : RUNNING);
+            event.setId(id);
+            viewModel.update(event);
+
+            Alarm alarm = new EventAlarm(getActivity(), date, notification_time, notification_settings);
+            alarm.editAlarm(event.getId(), name);
+
+            Toast.makeText(getActivity(), "Event updated", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -74,6 +74,7 @@ public class EventRepository {
             @NonNull
             @Override
             protected LiveData<Event> loadFromDb() {
+                appExecutors.diskIO().execute(() -> eventDao.insert(event));
                 return eventDao.getEvent(event.getId());
             }
         }.asLiveData();
@@ -95,6 +96,7 @@ public class EventRepository {
             @NonNull
             @Override
             protected LiveData<Event> loadFromDb() {
+                appExecutors.diskIO().execute(() -> eventDao.update(event));
                 return eventDao.getEvent(event.getId());
             }
         }.asLiveData();
@@ -117,7 +119,7 @@ public class EventRepository {
             @Override
             protected LiveData<Event> loadFromDb() {
                 LiveData<Event> deleted =  eventDao.getEvent(event.getId());
-                eventDao.delete(event);
+                appExecutors.diskIO().execute(() -> eventDao.delete(event));
                 return deleted;
             }
         }.asLiveData();
@@ -140,7 +142,7 @@ public class EventRepository {
             @Override
             protected LiveData<List<Event>> loadFromDb() {
                 LiveData<List<Event>> deleted = eventDao.getFutureEvents();
-                eventDao.deleteAll();
+                appExecutors.diskIO().execute(() -> eventDao.deleteAll());
                 return deleted;
             }
         }.asLiveData();

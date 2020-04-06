@@ -8,22 +8,21 @@ import androidx.annotation.Nullable;
 
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.ui.base.BaseActivity;
+import com.zacle.scheduler.utils.EventStatus;
 
 public class AddEditActivity extends BaseActivity implements AddEditFragment.OnSaveEventListener {
     private static final String TAG = "AddEditActivity";
 
-    public static final int ADD_EVENT_REQUEST = 1;
-    public static final int UPDATE_EVENT_REQUEST = 2;
-
-    private static final String ID = "com.zacle.scheduler.ui.addOrEdit.id";
-    private static final String NAME = "com.zacle.scheduler.ui.addOrEdit.name";
-    private static final String DATE = "com.zacle.scheduler.ui.addOrEdit.date";
-    private static final String SOURCE_LAT = "com.zacle.scheduler.ui.addOrEdit.sourceLat";
-    private static final String SOURCE_LONG = "com.zacle.scheduler.ui.addOrEdit.sourceLong";
-    private static final String DESTINATION_LAT = "com.zacle.scheduler.ui.addOrEdit.destinationLat";
-    private static final String DESTINATION_LONG = "com.zacle.scheduler.ui.addOrEdit.destinationLong";
-    private static final String STATUS = "com.zacle.scheduler.ui.addOrEdit.status";
-    private static final String NOTIFY = "com.zacle.scheduler.ui.addOrEdit.notify";
+    public static final String ID = "com.zacle.scheduler.ui.addOrEdit.id";
+    public static final String NAME = "com.zacle.scheduler.ui.addOrEdit.name";
+    public static final String DATE = "com.zacle.scheduler.ui.addOrEdit.date";
+    public static final String SOURCE_LAT = "com.zacle.scheduler.ui.addOrEdit.sourceLat";
+    public static final String SOURCE_LONG = "com.zacle.scheduler.ui.addOrEdit.sourceLong";
+    public static final String DESTINATION_LAT = "com.zacle.scheduler.ui.addOrEdit.destinationLat";
+    public static final String DESTINATION_LONG = "com.zacle.scheduler.ui.addOrEdit.destinationLong";
+    public static final String STATUS = "com.zacle.scheduler.ui.addOrEdit.status";
+    public static final String NOTIFY = "com.zacle.scheduler.ui.addOrEdit.notify";
+    public static final String NOTIFY_SETTINGS = "com.zacle.scheduler.ui.addOrEdit.notify_time";
     private final int INIT = -1;
 
     private int id = INIT;
@@ -33,6 +32,8 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     private double sourceLong = INIT;
     private double destinationLat = INIT;
     private double destinationLong = INIT;
+    private int notification_time = 30;
+    private String notification_settings = "minutes";
     private int status = 0;
 
     /**
@@ -47,7 +48,8 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
 
 
     public static Intent newIntent(Context context, int id, String name, long date, double sourceLat,
-                                   double sourceLong, double destinationLat, double destinationLong, int status) {
+                                   double sourceLong, double destinationLat, double destinationLong,
+                                   int notification_time, String notification_settings, EventStatus status) {
         Intent intent = new Intent(context, AddEditActivity.class);
         intent.putExtra(ID, id);
         intent.putExtra(NAME, name);
@@ -56,7 +58,9 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
         intent.putExtra(SOURCE_LONG, sourceLong);
         intent.putExtra(DESTINATION_LAT, destinationLat);
         intent.putExtra(DESTINATION_LONG, destinationLong);
-        intent.putExtra(STATUS, status);
+        intent.putExtra(NOTIFY, notification_time);
+        intent.putExtra(NOTIFY_SETTINGS, notification_settings);
+        intent.putExtra(STATUS, status.getCode());
         return intent;
     }
 
@@ -65,6 +69,12 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
         super.onCreate(savedInstanceState);
         setUp();
         verifyIntent();
+        if (id != INIT) {
+            getSupportActionBar().setTitle(R.string.edit_event);
+        } else {
+            getSupportActionBar().setTitle(R.string.add_event);
+        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         startFragment();
     }
 
@@ -76,7 +86,8 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     private void startFragment() {
         AddEditFragment addEditFragment;
         if (id != -1) {
-            addEditFragment = AddEditFragment.newInstance(id, name, date, sourceLat, sourceLong, destinationLat, destinationLong, status);
+            addEditFragment = AddEditFragment.newInstance(id, name, date, sourceLat, sourceLong, destinationLat, destinationLong,
+                                                            notification_time, notification_settings, status);
         } else {
             addEditFragment = new AddEditFragment();
         }
@@ -93,6 +104,8 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
             sourceLong = intent.getDoubleExtra(SOURCE_LONG, INIT);
             destinationLat = intent.getDoubleExtra(DESTINATION_LAT, INIT);
             destinationLong = intent.getDoubleExtra(DESTINATION_LONG, INIT);
+            notification_time = intent.getIntExtra(NOTIFY, 30);
+            notification_settings = intent.getStringExtra(NOTIFY_SETTINGS);
             status = intent.getIntExtra(STATUS, 0);
         }
     }
@@ -113,12 +126,37 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     }
 
     @Override
-    public void save(int id, String name, long date, double sourceLat, double sourceLong, double destinationLat, double destinationLong, int status) {
+    public void save(int id, String name, long date, double sourceLat, double sourceLong, double destinationLat, double destinationLong, int status, int notification_time, String notification_settings) {
+        Intent intent = new Intent();
+        intent.putExtra(ID, id);
+        intent.putExtra(NAME, name);
+        intent.putExtra(DATE, date);
+        intent.putExtra(SOURCE_LAT, sourceLat);
+        intent.putExtra(SOURCE_LONG, sourceLong);
+        intent.putExtra(DESTINATION_LAT, destinationLat);
+        intent.putExtra(DESTINATION_LONG, destinationLong);
+        intent.putExtra(STATUS, status);
+        intent.putExtra(NOTIFY, notification_time);
+        intent.putExtra(NOTIFY_SETTINGS, notification_settings);
 
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     @Override
-    public void save(String name, long date, double sourceLat, double sourceLong, double destinationLat, double destinationLong, int status) {
+    public void save(String name, long date, double sourceLat, double sourceLong, double destinationLat, double destinationLong, int status, int notification_time, String notification_settings) {
+        Intent intent = new Intent();
+        intent.putExtra(NAME, name);
+        intent.putExtra(DATE, date);
+        intent.putExtra(SOURCE_LAT, sourceLat);
+        intent.putExtra(SOURCE_LONG, sourceLong);
+        intent.putExtra(DESTINATION_LAT, destinationLat);
+        intent.putExtra(DESTINATION_LONG, destinationLong);
+        intent.putExtra(STATUS, status);
+        intent.putExtra(NOTIFY, notification_time);
+        intent.putExtra(NOTIFY_SETTINGS, notification_settings);
 
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }

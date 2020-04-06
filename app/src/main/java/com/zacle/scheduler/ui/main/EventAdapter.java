@@ -62,7 +62,11 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
         holder.setDate(event);
     }
 
-    public static class EventHolder extends RecyclerView.ViewHolder {
+    public Event getEventAt(int position) {
+        return getItem(position);
+    }
+
+    public class EventHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.schedule_status) ImageView status;
         @BindView(R.id.event_name) TextView name;
         @BindView(R.id.event_date) TextView date;
@@ -70,6 +74,7 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
         public EventHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(view -> onClick());
         }
 
         private void setStatus(Event event) {
@@ -89,6 +94,13 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
             String formatedDate = simpleDateFormat.format(event.getTime());
             date.setText(formatedDate);
+        }
+
+        private void onClick() {
+            int position = getAdapterPosition();
+            if (listener != null && position != RecyclerView.NO_POSITION) {
+                listener.onItemClick(getItem(position));
+            }
         }
     }
 

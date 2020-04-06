@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 
     <application
         android:name=".SchedulerApp"
@@ -14,7 +16,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.addOrEdit.AddEditActivity"></activity>
+        <activity android:name=".ui.addOrEdit.AddEditActivity"
+            android:parentActivityName=".ui.main.MainActivity"></activity>
         <activity
             android:name=".ui.main.MainActivity"
             android:label="@string/app_name"
@@ -28,6 +31,13 @@
         <activity android:name=".ui.base.BaseActivity" />
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <receiver android:name=".service.alarm.EventAlarmReceiver" />
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
     </application>
 
 </manifest>
