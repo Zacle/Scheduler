@@ -5,6 +5,7 @@
     <string name="title_activity_main">Schedules</string>
     <string name="add_event">Add Event</string>
     <string name="edit_event">Edit Event</string>
+    <string name="title_activity_running_event">Running Event</string>
 
     // Bottom navigation
     <string name="schedule">Schedules</string>
@@ -23,20 +24,58 @@
     <string name="completed">Completed</string>
     <string name="save">Save</string>
 
-    // API
-    <string name="google_api">AIzaSyB16RVx2CJNxAH0JByNTOPevtyXB6YpISI</string>
-
     // Notification Dialog
     <string name="ok">OK</string>
     <string name="cancel">CANCEL</string>
     <string name="title">Custom Notification</string>
     <string name="minutes">Minutes</string>
     <string name="hours">Hours</string>
+    <string name="alarm_notification">Would you like to start the event tracker?</string>
+    <string name="alarm_ok_button">Yes</string>
+    <string name="alarm_no_button">No</string>
 
     // Add or Edit event
     <string name="enter_name">Please enter event name</string>
     <string name="select_date_or_time">Please select date and time</string>
     <string name="select_source_location">Please select source location</string>
     <string name="select_destination_location">Please select destination location</string>
+
+    // Map
+    <string name="enable_location">Please enable your location</string>
+
+    // Geofence
+    <!-- Error strings -->
+    <string name="geofence_not_available">Geofence service is not available now</string>
+    <string name="geofence_too_many_geofences">Your app has registered too many geofences</string>
+    <string name="geofence_too_many_pending_intents">
+        You have provided too many PendingIntents to the addGeofences() call
+    </string>
+    <string name="unknown_geofence_error">
+        Unknown error: the Geofence service is not available now
+    </string>
+    <string name="geofence_transition_invalid_type">
+        Geofence transition error: invalid transition type %1$d
+    </string>
+
+    <!-- Transition type strings -->
+    <string name="geofence_transition_entered">Entered</string>
+    <string name="geofence_transition_exited">Exited</string>
+    <string name="unknown_geofence_transition">Unknown Transition</string>
+    <string name="geofence_added">You will be notified once arrived</string>
+
+    <string name="geofence_transition_notification_text">
+        Click notification to return to app
+    </string>
+
+    <!-- Geofence Notification -->
+    <string name="geofence_notification_message">You\'re arrived at the destination.</string>
+    <string name="geofence_ok_button">Yes</string>
+    <string name="geofence_not_button">Not yet</string>
+
+    // Tracking Location
+    <string name="location_tracking">Location tracking started</string>
+    <string name="location_updated">Location Updated: %1$s</string>
+    <string name="launch_activity">Launch</string>
+    <string name="remove_location_updates">Remove location updates</string>
 
 </resources>

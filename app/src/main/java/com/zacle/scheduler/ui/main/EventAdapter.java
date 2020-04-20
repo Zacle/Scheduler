@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static com.zacle.scheduler.utils.EventStatus.COMING;
 import static com.zacle.scheduler.utils.EventStatus.RUNNING;
@@ -39,8 +40,6 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
         public boolean areContentsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
             return oldItem.getName().equals(newItem.getName()) &&
                     oldItem.getTime().getTime() == newItem.getTime().getTime() &&
-                    Double.compare(oldItem.getSourceLat(), newItem.getSourceLat()) == 0 &&
-                    Double.compare(oldItem.getSourceLong(), newItem.getSourceLong()) == 0 &&
                     Double.compare(oldItem.getDestinationLat(), newItem.getDestinationLat()) == 0 &&
                     Double.compare(oldItem.getDestinationLong(), newItem.getDestinationLong()) == 0 &&
                     oldItem.getStatus().getCode() == newItem.getStatus().getCode();
@@ -70,6 +69,7 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
         @BindView(R.id.schedule_status) ImageView status;
         @BindView(R.id.event_name) TextView name;
         @BindView(R.id.event_date) TextView date;
+        @BindView(R.id.lunch_event) ImageView lunch;
 
         public EventHolder(View itemView) {
             super(itemView);
@@ -102,10 +102,19 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
                 listener.onItemClick(getItem(position));
             }
         }
+
+        @OnClick(R.id.lunch_event)
+        public void lunchMap() {
+            int position = getAdapterPosition();
+            if (listener != null && position != RecyclerView.NO_POSITION) {
+                listener.onLunchClick(getItem(position));
+            }
+        }
     }
 
     public interface OnItemClickListener {
-        void onItemClick(Event note);
+        void onItemClick(Event event);
+        void onLunchClick(Event evnt);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {

@@ -16,8 +16,6 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     public static final String ID = "com.zacle.scheduler.ui.addOrEdit.id";
     public static final String NAME = "com.zacle.scheduler.ui.addOrEdit.name";
     public static final String DATE = "com.zacle.scheduler.ui.addOrEdit.date";
-    public static final String SOURCE_LAT = "com.zacle.scheduler.ui.addOrEdit.sourceLat";
-    public static final String SOURCE_LONG = "com.zacle.scheduler.ui.addOrEdit.sourceLong";
     public static final String DESTINATION_LAT = "com.zacle.scheduler.ui.addOrEdit.destinationLat";
     public static final String DESTINATION_LONG = "com.zacle.scheduler.ui.addOrEdit.destinationLong";
     public static final String STATUS = "com.zacle.scheduler.ui.addOrEdit.status";
@@ -28,8 +26,6 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     private int id = INIT;
     private String name = "";
     private long date = INIT;
-    private double sourceLat = INIT;
-    private double sourceLong = INIT;
     private double destinationLat = INIT;
     private double destinationLong = INIT;
     private int notification_time = 30;
@@ -47,15 +43,12 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     }
 
 
-    public static Intent newIntent(Context context, int id, String name, long date, double sourceLat,
-                                   double sourceLong, double destinationLat, double destinationLong,
+    public static Intent newIntent(Context context, int id, String name, long date, double destinationLat, double destinationLong,
                                    int notification_time, String notification_settings, EventStatus status) {
         Intent intent = new Intent(context, AddEditActivity.class);
         intent.putExtra(ID, id);
         intent.putExtra(NAME, name);
         intent.putExtra(DATE, date);
-        intent.putExtra(SOURCE_LAT, sourceLat);
-        intent.putExtra(SOURCE_LONG, sourceLong);
         intent.putExtra(DESTINATION_LAT, destinationLat);
         intent.putExtra(DESTINATION_LONG, destinationLong);
         intent.putExtra(NOTIFY, notification_time);
@@ -86,7 +79,7 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     private void startFragment() {
         AddEditFragment addEditFragment;
         if (id != -1) {
-            addEditFragment = AddEditFragment.newInstance(id, name, date, sourceLat, sourceLong, destinationLat, destinationLong,
+            addEditFragment = AddEditFragment.newInstance(id, name, date, destinationLat, destinationLong,
                                                             notification_time, notification_settings, status);
         } else {
             addEditFragment = new AddEditFragment();
@@ -100,8 +93,6 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
             id = intent.getIntExtra(ID, -1);
             name = intent.getStringExtra(NAME);
             date = intent.getLongExtra(DATE, 0);
-            sourceLat = intent.getDoubleExtra(SOURCE_LAT, INIT);
-            sourceLong = intent.getDoubleExtra(SOURCE_LONG, INIT);
             destinationLat = intent.getDoubleExtra(DESTINATION_LAT, INIT);
             destinationLong = intent.getDoubleExtra(DESTINATION_LONG, INIT);
             notification_time = intent.getIntExtra(NOTIFY, 30);
@@ -126,13 +117,11 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     }
 
     @Override
-    public void save(int id, String name, long date, double sourceLat, double sourceLong, double destinationLat, double destinationLong, int status, int notification_time, String notification_settings) {
+    public void save(int id, String name, long date, double destinationLat, double destinationLong, int status, int notification_time, String notification_settings) {
         Intent intent = new Intent();
         intent.putExtra(ID, id);
         intent.putExtra(NAME, name);
         intent.putExtra(DATE, date);
-        intent.putExtra(SOURCE_LAT, sourceLat);
-        intent.putExtra(SOURCE_LONG, sourceLong);
         intent.putExtra(DESTINATION_LAT, destinationLat);
         intent.putExtra(DESTINATION_LONG, destinationLong);
         intent.putExtra(STATUS, status);
@@ -144,12 +133,10 @@ public class AddEditActivity extends BaseActivity implements AddEditFragment.OnS
     }
 
     @Override
-    public void save(String name, long date, double sourceLat, double sourceLong, double destinationLat, double destinationLong, int status, int notification_time, String notification_settings) {
+    public void save(String name, long date, double destinationLat, double destinationLong, int status, int notification_time, String notification_settings) {
         Intent intent = new Intent();
         intent.putExtra(NAME, name);
         intent.putExtra(DATE, date);
-        intent.putExtra(SOURCE_LAT, sourceLat);
-        intent.putExtra(SOURCE_LONG, sourceLong);
         intent.putExtra(DESTINATION_LAT, destinationLat);
         intent.putExtra(DESTINATION_LONG, destinationLong);
         intent.putExtra(STATUS, status);

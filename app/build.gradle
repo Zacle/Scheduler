@@ -33,6 +33,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
     implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.google.android.gms:play-services-maps:16.1.0'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-all:2.0.2-beta'
@@ -101,4 +102,8 @@ dependencies {
     // Google places
     def google_place_version = "2.2.0"
     implementation "com.google.android.libraries.places:places:$google_place_version"
+
+    // Google directions
+    implementation 'com.google.maps:google-maps-services:0.11.0'
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
 }

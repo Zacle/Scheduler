@@ -1,8 +1,8 @@
 package com.zacle.scheduler.ui.main;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.data.database.entity.Event;
@@ -25,7 +24,7 @@ import com.zacle.scheduler.service.alarm.Alarm;
 import com.zacle.scheduler.service.alarm.EventAlarm;
 import com.zacle.scheduler.ui.addOrEdit.AddEditActivity;
 import com.zacle.scheduler.ui.base.BaseFragment;
-import com.zacle.scheduler.utils.EventStatus;
+import com.zacle.scheduler.ui.map.RunningEventActivity;
 import com.zacle.scheduler.viewmodel.ViewModelProviderFactory;
 
 import java.util.Date;
@@ -41,19 +40,17 @@ import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.DESTINATION_LAT;
 import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.DESTINATION_LONG;
 import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.NOTIFY;
 import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.NOTIFY_SETTINGS;
-import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.SOURCE_LAT;
-import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.SOURCE_LONG;
 import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.STATUS;
 import static com.zacle.scheduler.utils.EventStatus.COMING;
 import static com.zacle.scheduler.utils.EventStatus.RUNNING;
 
 // TODO refactor
-public class MainFragment extends BaseFragment {
+public class MainFragment extends BaseFragment implements EventAdapter.OnItemClickListener {
 
     private static final String TAG = "MainFragment";
 
-    public static final int ADD_EVENT_REQUEST = 1;
-    public static final int UPDATE_EVENT_REQUEST = 2;
+    private static final int ADD_EVENT_REQUEST = 1;
+    private static final int UPDATE_EVENT_REQUEST = 2;
 
     private MainViewModel viewModel;
     private Unbinder unbinder;
@@ -190,14 +187,7 @@ public class MainFragment extends BaseFragment {
         recyclerView.setHasFixedSize(true);
         adapter = new EventAdapter();
         recyclerView.setAdapter(adapter);
-        adapter.setOnItemClickListener(event -> {
-            Intent intent = AddEditActivity.newIntent(getActivity(), event.getId(), event.getName(), event.getTime().getTime(),
-                                                        event.getSourceLat(), event.getSourceLong(), event.getDestinationLat(),
-                                                        event.getDestinationLong(), event.getNotification_time(),
-                                                        event.getNotification_settings(), COMING);
-
-            startActivityForResult(intent, UPDATE_EVENT_REQUEST);
-        });
+        adapter.setOnItemClickListener(this);
     }
 
     private void subscribeObservers() {
@@ -231,15 +221,13 @@ public class MainFragment extends BaseFragment {
         if (requestCode == ADD_EVENT_REQUEST && resultCode == RESULT_OK) {
             String name = data.getStringExtra(AddEditActivity.NAME);
             long date = data.getLongExtra(AddEditActivity.DATE, INIT);
-            double sourceLat = data.getDoubleExtra(SOURCE_LAT, INIT);
-            double sourceLong = data.getDoubleExtra(SOURCE_LONG, INIT);
             double destinationLat = data.getDoubleExtra(DESTINATION_LAT, INIT);
             double destinationLong = data.getDoubleExtra(DESTINATION_LONG, INIT);
             int status = data.getIntExtra(STATUS, 0);
             int notification_time = data.getIntExtra(NOTIFY, INIT);
             String notification_settings = data.getStringExtra(NOTIFY_SETTINGS);
 
-            Event event = new Event(name, new Date(date), sourceLat, sourceLong, destinationLat, destinationLong, notification_time, notification_settings, false, COMING);
+            Event event = new Event(name, new Date(date), destinationLat, destinationLong, notification_time, notification_settings, false, COMING);
             viewModel.insert(event);
 
             Alarm alarm = new EventAlarm(getActivity(), date, notification_time, notification_settings);
@@ -250,15 +238,13 @@ public class MainFragment extends BaseFragment {
             int id = data.getIntExtra(AddEditActivity.ID, INIT);
             String name = data.getStringExtra(AddEditActivity.NAME);
             long date = data.getLongExtra(AddEditActivity.DATE, INIT);
-            double sourceLat = data.getDoubleExtra(SOURCE_LAT, INIT);
-            double sourceLong = data.getDoubleExtra(SOURCE_LONG, INIT);
             double destinationLat = data.getDoubleExtra(DESTINATION_LAT, INIT);
             double destinationLong = data.getDoubleExtra(DESTINATION_LONG, INIT);
             int status = data.getIntExtra(STATUS, 0);
             int notification_time = data.getIntExtra(NOTIFY, INIT);
             String notification_settings = data.getStringExtra(NOTIFY_SETTINGS);
 
-            Event event = new Event(name, new Date(date), sourceLat, sourceLong, destinationLat, destinationLong, notification_time, notification_settings, false, (status == 0) ? COMING : RUNNING);
+            Event event = new Event(name, new Date(date), destinationLat, destinationLong, notification_time, notification_settings, false, (status == 0) ? COMING : RUNNING);
             event.setId(id);
             viewModel.update(event);
 
@@ -267,5 +253,50 @@ public class MainFragment extends BaseFragment {
 
             Toast.makeText(getActivity(), "Event updated", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onItemClick(Event event) {
+        Intent intent = AddEditActivity.newIntent(getActivity(), event.getId(), event.getName(), event.getTime().getTime(),
+                event.getDestinationLat(), event.getDestinationLong(), event.getNotification_time(),
+                event.getNotification_settings(), COMING);
+
+        startActivityForResult(intent, UPDATE_EVENT_REQUEST);
+    }
+
+    @Override
+    public void onLunchClick(Event event) {
+
+        if (serviceIsRunningInForeground(getActivity())) {
+            Toast.makeText(getActivity(), "An event is already running", Toast.LENGTH_SHORT).show();
+        } else {
+            event.setStatus(RUNNING);
+            viewModel.update(event);
+
+            Intent intent = RunningEventActivity.newIntent(getActivity(), event.getId(), event.getName(),
+                    event.getDestinationLat(), event.getDestinationLong());
+            startActivity(intent);
+        }
+    }
+
+    /**
+     * Returns true if there is a foreground service.
+     *
+     * @param context The {@link Context}.
+     */
+    public boolean serviceIsRunningInForeground(Context context) {
+
+        ActivityManager manager = (ActivityManager) context.getSystemService(
+                Context.ACTIVITY_SERVICE);
+        Log.d(TAG, "serviceIsRunningInForeground: checking... " + manager.getRunningServices(Integer.MAX_VALUE).size());
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(
+                Integer.MAX_VALUE)) {
+            if ("com.zacle.scheduler.service.location.LocationUpdatesService".equals(service.service.getClassName())) {
+                Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                return true;
+            }
+            Log.d(TAG, "serviceIsRunningInForeground: = " + service.service.getClassName());
+        }
+        return false;
     }
 }

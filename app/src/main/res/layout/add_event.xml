@@ -51,14 +51,6 @@
         android:layout_margin="8dp"/>
 
     <Button
-        android:id="@+id/select_source"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/select_source"
-        app:icon="@drawable/ic_place"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Icon" />
-
-    <Button
         android:id="@+id/select_destination"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

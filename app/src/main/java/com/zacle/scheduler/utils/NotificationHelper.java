@@ -46,8 +46,6 @@ public class NotificationHelper extends ContextWrapper {
 
     public NotificationCompat.Builder getChannelNotification() {
         return new NotificationCompat.Builder(getApplicationContext(), channel_name)
-                .setContentTitle(name)
-                .setContentText("Your AlarmManager is working.")
                 .setSmallIcon(R.drawable.ic_date_range);
     }
 }

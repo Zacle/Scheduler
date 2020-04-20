@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -56,23 +55,18 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
     private static final String ID = "com.zacle.scheduler.ui.addOrEdit.id";
     private static final String NAME = "com.zacle.scheduler.ui.addOrEdit.name";
     private static final String DATE = "com.zacle.scheduler.ui.addOrEdit.date";
-    private static final String SOURCE_LAT = "com.zacle.scheduler.ui.addOrEdit.sourceLat";
-    private static final String SOURCE_LONG = "com.zacle.scheduler.ui.addOrEdit.sourceLong";
     private static final String DESTINATION_LAT = "com.zacle.scheduler.ui.addOrEdit.destinationLat";
     private static final String DESTINATION_LONG = "com.zacle.scheduler.ui.addOrEdit.destinationLong";
     private static final String NOTIFY = "com.zacle.scheduler.ui.addOrEdit.notify";
     public static final String NOTIFY_SETTINGS = "com.zacle.scheduler.ui.addOrEdit.notify_time";
     private static final String STATUS = "com.zacle.scheduler.ui.addOrEdit.status";
 
-    private final int AUTOCOMPLETE_REQUEST_CODE_SOURCE = 770;
     private final int AUTOCOMPLETE_REQUEST_CODE_DESTINATION = 771;
     private final int INIT = -1;
 
     private int id = INIT;
     private String name = "";
     private long date = INIT;
-    private double sourceLat = INIT;
-    private double sourceLong = INIT;
     private double destinationLat = INIT;
     private double destinationLong = INIT;
     private int status = 0;
@@ -83,7 +77,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
     private int newDay = INIT;
     private int notification_time = 30;
     private String notification_settings = "minutes";
-    private boolean sourceModified = false;
     private boolean destinationModified = false;
 
     private OnSaveEventListener saveEventListener;
@@ -100,9 +93,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
 
     @BindView(R.id.select_time)
     public Button selected_time;
-
-    @BindView(R.id.select_source)
-    public Button selected_source;
 
     @BindView(R.id.select_destination)
     public Button selected_destination;
@@ -126,16 +116,13 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
      *
      * @return A new instance of fragment MainFragment.
      */
-    public static AddEditFragment newInstance(int id, String name, long date, double sourceLat,
-                                              double sourceLong, double destinationLat, double destinationLong,
+    public static AddEditFragment newInstance(int id, String name, long date, double destinationLat, double destinationLong,
                                               int notification_time, String notification_settings, int status) {
         AddEditFragment fragment = new AddEditFragment();
         Bundle args = new Bundle();
         args.putInt(ID, id);
         args.putString(NAME, name);
         args.putLong(DATE, date);
-        args.putDouble(SOURCE_LAT, sourceLat);
-        args.putDouble(SOURCE_LONG, sourceLong);
         args.putDouble(DESTINATION_LAT, destinationLat);
         args.putDouble(DESTINATION_LONG, destinationLong);
         args.putInt(NOTIFY, notification_time);
@@ -153,8 +140,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
             id = bundle.getInt(ID);
             name = bundle.getString(NAME);
             date = bundle.getLong(DATE);
-            sourceLat = bundle.getDouble(SOURCE_LAT);
-            sourceLong = bundle.getDouble(SOURCE_LONG);
             destinationLat = bundle.getDouble(DESTINATION_LAT);
             destinationLong = bundle.getDouble(DESTINATION_LONG);
             notification_time = bundle.getInt(NOTIFY);
@@ -239,7 +224,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
             selected_date.setText(DateUtil.formatDate(date));
             selected_time.setText(DateUtil.formatTime(date));
             notification.setText(notification_time + " " + getTimePlural(notification_settings) + " before");
-            setSourceLocation();
             setDestinationLocation();
             setDate();
             setTime();
@@ -278,19 +262,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         }
     }
 
-    private void setSourceLocation() {
-        Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
-
-        try {
-            List<Address> addresses = geocoder.getFromLocation(sourceLat, sourceLong, 1);
-            Address address = addresses.get(0);
-            String location = address.getAddressLine(0);
-            selected_source.setText(location);
-        } catch(IOException e) {
-            Log.e(TAG, "Geocoder I/O Exception", e);
-        }
-    }
-
     @Override
     protected void setUp() {
         initPlace();
@@ -299,13 +270,13 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
     }
 
     private void initPlace() {
-        String apiKey = getString(R.string.google_api);
+        String apiKey = getString(R.string.google_maps_key);
         if (!Places.isInitialized()) {
             Places.initialize(getActivity().getApplicationContext(), apiKey);
         }
         placesClient = Places.createClient(getActivity());
         fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
-        intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(getActivity());
+        intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(getActivity());
     }
 
     // TODO replace with Material Design
@@ -345,7 +316,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         newDay = dayOfMonth;
         Date d = DateUtil.getDate(year, monthOfYear, dayOfMonth, 0, 0);
         selected_date.setText(DateUtil.formatDate(d.getTime()));
-        Toast.makeText(getActivity(), date, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -356,13 +326,7 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         String time = "You picked the following time: " + hourString + "h" + minuteString + "m" + secondString + "s";
         newHour = hourOfDay;
         newMinute = minute;
-        selected_time.setText(hourOfDay + ":" + minute);
-        Toast.makeText(getActivity(), time, Toast.LENGTH_SHORT).show();
-    }
-
-    @OnClick(R.id.select_source)
-    public void searchSourceLocation() {
-        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE_SOURCE);
+        selected_time.setText(hourString + ":" + minuteString);
     }
 
     @OnClick(R.id.select_destination)
@@ -379,22 +343,7 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == AUTOCOMPLETE_REQUEST_CODE_SOURCE) {
-            if (resultCode == RESULT_OK) {
-                Place place = Autocomplete.getPlaceFromIntent(data);
-                selected_source.setText(place.getAddress());
-                LatLng latLng = place.getLatLng();
-                sourceLat = latLng.latitude;
-                sourceLong = latLng.longitude;
-                sourceModified = true;
-                Log.i(TAG, "Place: " + place.getAddress() + ", " + place.getName());
-            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                Status status = Autocomplete.getStatusFromIntent(data);
-                Log.i(TAG, status.getStatusMessage());
-            } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == AUTOCOMPLETE_REQUEST_CODE_DESTINATION) {
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE_DESTINATION) {
             if (resultCode == RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
                 selected_destination.setText(place.getAddress());
@@ -422,19 +371,15 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
             showSnackBar(R.string.select_date_or_time);
             return;
         }
-        if (!checkSource()) {
-            showSnackBar(R.string.select_source_location);
-            return;
-        }
         if (!checkDestination()) {
             showSnackBar(R.string.select_destination_location);
             return;
         }
 
         if (id == INIT) {
-            saveEventListener.save(name, date, sourceLat, sourceLong, destinationLat, destinationLong, status, notification_time, notification_settings);
+            saveEventListener.save(name, date, destinationLat, destinationLong, status, notification_time, notification_settings);
         } else {
-            saveEventListener.save(id, name, date, sourceLat, sourceLong, destinationLat, destinationLong, status, notification_time, notification_settings);
+            saveEventListener.save(id, name, date, destinationLat, destinationLong, status, notification_time, notification_settings);
         }
 
     }
@@ -465,7 +410,7 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
     }
 
     private boolean checkAndSaveDate() {
-        if (newYear == INIT) {
+        if (id != INIT && newYear == INIT) {
             return false;
         }
         long validate = DateUtil.getDate(newYear, newMonth, newDay, newHour, newMinute).getTime();
@@ -477,29 +422,18 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         return true;
     }
 
-    // TODO modify method
-    private boolean checkSource() {
-        sourceLat = 13.90376;
-        sourceLong = 42.90605;
-        return true;
-//        return sourceModified;
-    }
-
-    // TODO modify method
     private boolean checkDestination() {
-        destinationLat = 68.92495;
-        destinationLong = -143.81223;
-        return true;
-//        return destinationModified;
+        if (id != INIT) {
+            return true;
+        }
+        return destinationModified;
     }
 
     public interface OnSaveEventListener {
-        void save(int id, String name, long date, double sourceLat,
-                  double sourceLong, double destinationLat, double destinationLong, int status,
+        void save(int id, String name, long date, double destinationLat, double destinationLong, int status,
                   int notification_time, String notification_settings);
 
-        void save(String name, long date, double sourceLat,
-                         double sourceLong, double destinationLat, double destinationLong, int status,
+        void save(String name, long date, double destinationLat, double destinationLong, int status,
                          int notification_time, String notification_settings);
     }
 }

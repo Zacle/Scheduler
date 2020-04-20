@@ -19,8 +19,6 @@ public class Event {
     private int id;
     private String name;
     private Date time;
-    private double sourceLat;
-    private double sourceLong;
     private double destinationLat;
     private double destinationLong;
     private int notification_time;
@@ -31,13 +29,11 @@ public class Event {
     public Event() {}
 
     @Ignore
-    public Event(String name, Date time, double sourceLat, double sourceLong, double destinationLat,
+    public Event(String name, Date time, double destinationLat,
                  double destinationLong, int notification_time, String notification_settings,
                  boolean isCompleted, EventStatus status) {
         this.name = name;
         this.time = time;
-        this.sourceLat = sourceLat;
-        this.sourceLong = sourceLong;
         this.destinationLat = destinationLat;
         this.destinationLong = destinationLong;
         this.notification_time = notification_time;
@@ -68,22 +64,6 @@ public class Event {
 
     public void setTime(Date time) {
         this.time = time;
-    }
-
-    public double getSourceLat() {
-        return sourceLat;
-    }
-
-    public void setSourceLat(double sourceLat) {
-        this.sourceLat = sourceLat;
-    }
-
-    public double getSourceLong() {
-        return sourceLong;
-    }
-
-    public void setSourceLong(double sourceLong) {
-        this.sourceLong = sourceLong;
     }
 
     public double getDestinationLat() {
