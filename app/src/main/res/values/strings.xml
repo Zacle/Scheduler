@@ -78,4 +78,7 @@
     <string name="launch_activity">Launch</string>
     <string name="remove_location_updates">Remove location updates</string>
 
+    // Chats
+    <string name="action_chat">Scheduler Chats</string>
+
 </resources>

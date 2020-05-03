@@ -28,12 +28,15 @@ import com.zacle.scheduler.ui.map.RunningEventActivity;
 import com.zacle.scheduler.viewmodel.ViewModelProviderFactory;
 
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import co.chatsdk.core.session.ChatSDK;
+import co.chatsdk.core.utils.DisposableList;
 
 import static android.app.Activity.RESULT_OK;
 import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.DESTINATION_LAT;
@@ -48,9 +51,11 @@ import static com.zacle.scheduler.utils.EventStatus.RUNNING;
 public class MainFragment extends BaseFragment implements EventAdapter.OnItemClickListener {
 
     private static final String TAG = "MainFragment";
+    private static final String USER_AUTHENTICATED = "com.zacle.scheduler.ui.main.user_auth";
 
     private static final int ADD_EVENT_REQUEST = 1;
     private static final int UPDATE_EVENT_REQUEST = 2;
+    public static final int RC_SIGN_IN = 900;
 
     private MainViewModel viewModel;
     private Unbinder unbinder;
@@ -65,6 +70,10 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
     ViewModelProviderFactory providerFactory;
 
     private OnFragmentInteractionListener mListener;
+
+    // This is a list of extras that are passed to the login view
+    protected HashMap<String, Object> extras = new HashMap<>();
+    protected DisposableList disposableList = new DisposableList();
 
     public MainFragment() {
         // Required empty public constructor
@@ -102,6 +111,31 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (ChatSDK.auth().isAuthenticatedThisSession()) {
+            Log.d(TAG, "onResume: Already authenticated");
+        } else if (ChatSDK.auth().isAuthenticated()) {
+            disposableList.add(ChatSDK.auth().authenticate()
+                    .doFinally(() -> Log.d(TAG, "onResume: user = " + ChatSDK.currentUser().getEmail()))
+                    .subscribe(() -> {}, throwable -> startLoginActivity()));
+        } else {
+            startLoginActivity();
+        }
+    }
+
+    private void startLoginActivity() {
+        Log.d(TAG, "startLoginActivity: starting login activity");
+        startActivityForResult(ChatSDK.ui().getLoginIntent(getActivity(), extras), RC_SIGN_IN);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     @Override
@@ -252,6 +286,8 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
             alarm.editAlarm(event.getId(), name);
 
             Toast.makeText(getActivity(), "Event updated", Toast.LENGTH_SHORT).show();
+        } else if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
+            Toast.makeText(getActivity(), "Authenticated", Toast.LENGTH_SHORT).show();
         }
     }
 

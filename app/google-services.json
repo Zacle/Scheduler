@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "860095338345",
+    "firebase_url": "https://scheduler-zacle.firebaseio.com",
+    "project_id": "scheduler-zacle",
+    "storage_bucket": "scheduler-zacle.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860095338345:android:63a21a194d1f207e2d0ff8",
+        "android_client_info": {
+          "package_name": "com.zacle.scheduler"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "860095338345-g3fdsbu5ahus11g396pe273pc686vhgs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAHStWoA9a3d33nSpRwZBdZpCHXrctCGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "860095338345-g3fdsbu5ahus11g396pe273pc686vhgs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
