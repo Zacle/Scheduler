@@ -1,8 +1,18 @@
 package com.zacle.scheduler.utils;
 
+import android.Manifest;
+
 public final class AppConstants {
     public static final String STATUS_CODE_SUCCESS = "success";
     public static final String STATUS_CODE_FAILED = "failed";
+
+    public static final String MAPVIEW_BUNDLE_KEY = "SchedulerMapViewBundleKey";
+    public static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
+    public static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    public static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
+    public static final int BACKGROUND_PERMISSION_REQUEST_CODE = 12345;
+    public static final int ERROR_DIALOG_REQUEST = 12346;
+    public static final int PERMISSIONS_REQUEST_ENABLE_GPS = 12347;
 
     public static final String DB_NAME = "scheduler.db";
     public static final String PREF_NAME = "scheduler_pref";

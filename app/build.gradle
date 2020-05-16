@@ -36,6 +36,8 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation "com.leinardi.android:speed-dial:3.1.1"
+    implementation 'com.facebook.fresco:fresco:1.13.0'
+    implementation 'com.google.maps.android:android-maps-utils:1.2.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-all:2.0.2-beta'
@@ -112,6 +114,7 @@ dependencies {
     // add the Firebase SDK for Google Analytics
     def firebase_version = "17.3.0"
     implementation "com.google.firebase:firebase-analytics:$firebase_version"
+    implementation "com.google.firebase:firebase-core:$firebase_version"
 
     // Required Chat SDK components
     def chat_sdk_version = "4.8.12"
@@ -121,4 +124,10 @@ dependencies {
     implementation "co.chatsdk.chatsdk:chat-sdk-firebase-push:$chat_sdk_version"
     implementation "co.chatsdk.chatsdk:chat-sdk-firebase-ui:$chat_sdk_version"
     implementation "co.chatsdk.chatsdk:chat-sdk-ui:$chat_sdk_version"
+    implementation 'com.google.firebase:firebase-firestore:21.4.3'
+
+    // Glide
+    def glide_version = "4.11.0"
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
 }

@@ -33,6 +33,7 @@
     <string name="alarm_notification">Would you like to start the event tracker?</string>
     <string name="alarm_ok_button">Yes</string>
     <string name="alarm_no_button">No</string>
+    <string name="user_arrived">Arrived</string>
 
     // Add or Edit event
     <string name="enter_name">Please enter event name</string>
@@ -80,5 +81,12 @@
 
     // Chats
     <string name="action_chat">Scheduler Chats</string>
+    <string name="current_locations">Current Locations</string>
+
+    // Collections
+    <string name="users_collection">Users</string>
+    <string name="users_location_collection">User Locations</string>
+    <string name="collapsing_toolbar">Collapsing Toolbar</string>
+    <string name="title_activity_chat_user_locations">User Locations</string>
 
 </resources>

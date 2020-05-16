@@ -9,6 +9,8 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
@@ -29,9 +31,30 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.maps.DirectionsApi;
+import com.google.maps.DirectionsApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.model.DirectionsLeg;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
+import com.google.maps.model.Duration;
+import com.google.maps.model.TravelMode;
 import com.zacle.scheduler.R;
+import com.zacle.scheduler.data.model.User;
+import com.zacle.scheduler.data.model.UserLocation;
 import com.zacle.scheduler.ui.map.RunningEventActivity;
 import com.zacle.scheduler.utils.Utils;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
+import co.chatsdk.core.session.ChatSDK;
+import timber.log.Timber;
 
 
 /**
@@ -110,10 +133,14 @@ public class LocationUpdatesService extends Service {
 
     private Handler mServiceHandler;
 
+    private GeoApiContext geoApiContext;
+
     /**
      * The current location.
      */
     private Location mLocation;
+
+    private String notificationText = "";
 
     private static final int INIT = 123456789;
 
@@ -145,6 +172,12 @@ public class LocationUpdatesService extends Service {
                 onNewLocation(locationResult.getLastLocation());
             }
         };
+
+        if (geoApiContext == null) {
+            geoApiContext = new GeoApiContext.Builder()
+                    .apiKey(getString(R.string.google_maps_key))
+                    .build();
+        }
 
         createLocationRequest();
         getLastLocation();
@@ -291,7 +324,9 @@ public class LocationUpdatesService extends Service {
     private Notification getNotification() {
         Intent intent = new Intent(this, LocationUpdatesService.class);
 
-        CharSequence text = Utils.getLocationText(mLocation);
+        if (notificationText.equals("")) {
+            locationAddress(mLocation);
+        }
 
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
@@ -311,12 +346,12 @@ public class LocationUpdatesService extends Service {
                         activityPendingIntent)
                 .addAction(R.drawable.ic_cancel, getString(R.string.remove_location_updates),
                         servicePendingIntent)
-                .setContentText(text)
+                .setContentText(notificationText)
                 .setContentTitle(Utils.getLocationTitle(this))
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker(text)
+                .setTicker(notificationText)
                 .setWhen(System.currentTimeMillis());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -349,6 +384,8 @@ public class LocationUpdatesService extends Service {
 
         mLocation = location;
 
+        locationAddress(location);
+
         // Notify anyone listening for broadcasts about the new location.
         Intent intent = new Intent(ACTION_BROADCAST);
         intent.putExtra(EXTRA_LOCATION, location);
@@ -357,6 +394,88 @@ public class LocationUpdatesService extends Service {
         // Update notification content if running as a foreground service.
         if (serviceIsRunningInForeground(this)) {
             mNotificationManager.notify(NOTIFICATION_ID, getNotification());
+        }
+
+        updatePosition(location);
+    }
+
+    private void locationAddress(Location location) {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        try {
+            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            Address address = addresses.get(0);
+            notificationText = "Current location: " + address.getAddressLine(0);
+        } catch(IOException e) {
+            Timber.e("Geocoder I/O Exception: %s", e.getMessage());
+        }
+    }
+
+    private void updatePosition(Location location) {
+            // - Perform the actual request
+            DirectionsApiRequest directions = DirectionsApi.newRequest(geoApiContext)
+                    .mode(TravelMode.DRIVING)
+                    .origin(new com.google.maps.model.LatLng(
+                            location.getLatitude(),
+                            location.getLongitude()
+                    ))
+                    .destination(new com.google.maps.model.LatLng(
+                            destinationLat,
+                            destinationLong
+                    ));
+            directions.setCallback(new PendingResult.Callback<DirectionsResult>() {
+                @Override
+                public void onResult(DirectionsResult result) {
+                    Timber.d( "onResult: successfully retrieved directions.");
+                    Timber.d( "calculateDirections: routes: %s", result.routes[0].toString());
+                    Timber.d( "calculateDirections: duration: " + result.routes[0].legs[0].duration);
+                    Timber.d( "calculateDirections: distance: " + result.routes[0].legs[0].distance);
+                    Timber.d( "calculateDirections: geocodedWayPoints: %s", result.geocodedWaypoints[0].toString());
+                    String durationText;
+                    // - Parse the result
+                    DirectionsRoute route = result.routes[0];
+                    DirectionsLeg leg = route.legs[0];
+                    Duration duration = leg.duration;
+                    durationText = duration.humanReadable;
+
+                    durationText = "Remaining " + durationText;
+
+                    saveUserLocation(location, durationText);
+                }
+
+                @Override
+                public void onFailure(Throwable e) {
+                    Timber.e("calculateDirections: Failed to get directions: %s", e.getMessage() );
+                }
+            });
+    }
+
+    private void saveUserLocation(Location location, String durationText) {
+        try {
+            co.chatsdk.core.dao.User currentUser = ChatSDK.currentUser();
+            if (currentUser != null) {
+                User user = new User(currentUser.getEntityID(), currentUser.getName(), currentUser.getAvatarURL());
+                GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                UserLocation userLocation = new UserLocation(user, geoPoint, null, durationText);
+
+                DocumentReference userLocationRef = FirebaseFirestore.getInstance()
+                        .collection(getString(R.string.users_location_collection))
+                        .document(user.getId());
+
+                userLocationRef.set(userLocation)
+                        .addOnSuccessListener(aVoid -> {
+                            Timber.tag(TAG).d("DocumentSnapshot successfully written!");
+                            Timber.d("onComplete: \ninserted user location into database." +
+                                    "\n latitude: " + userLocation.getGeoPoint().getLatitude() +
+                                    "\n longitude: " + userLocation.getGeoPoint().getLongitude());
+                        })
+                        .addOnFailureListener(e -> {
+                            Timber.d("saveUser: Failed to write new user to firestore: %s", e.getMessage());
+                        });
+            }
+        } catch (NullPointerException e) {
+            Timber.e("saveUserLocation: stopping location service = %s", e.getMessage());
+            stopSelf();
         }
     }
 

@@ -5,4 +5,7 @@
     <dimen name="appbar_padding">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
+    <dimen name="detail_backdrop_height">250dp</dimen>
+    <dimen name="custom_marker_image">50dp</dimen>
+    <dimen name="custom_marker_padding">2dp</dimen>
 </resources>

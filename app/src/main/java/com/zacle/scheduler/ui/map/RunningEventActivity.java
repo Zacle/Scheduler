@@ -57,6 +57,12 @@ import com.zacle.scheduler.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
+import static com.zacle.scheduler.utils.AppConstants.COURSE_LOCATION;
+import static com.zacle.scheduler.utils.AppConstants.FINE_LOCATION;
+import static com.zacle.scheduler.utils.AppConstants.LOCATION_PERMISSION_REQUEST_CODE;
+
 
 public class RunningEventActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleMap.OnPolylineClickListener, OnCompleteListener<Void> {
@@ -68,10 +74,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
     public static final String DESTINATION_LAT = "com.zacle.scheduler.ui.addOrEdit.destinationLat";
     public static final String DESTINATION_LONG = "com.zacle.scheduler.ui.addOrEdit.destinationLong";
 
-    private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
-    private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-    private static final int BACKGROUND_PERMISSION_REQUEST_CODE = 12345;
+
     private static final float DEFAULT_ZOOM = 17f;
     private static final int PLACE_PICKER_REQUEST = 1;
     private static final int INIT = -1;
@@ -144,7 +147,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
     }
 
     private void startLocationService() {
-        Log.d(TAG, "1. startLocationService: location tracking started...");
+        Timber.d( "1. startLocationService: location tracking started...");
 
         Intent intent = LocationUpdatesService.newIntent(
                 this,
@@ -155,11 +158,11 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
         );
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
-            Log.d(TAG, "3. startLocationService: location tracking started...");
+            Timber.d( "3. startLocationService: location tracking started...");
             mService.requestLocationUpdates();
             RunningEventActivity.this.startForegroundService(intent);
         } else {
-            Log.d(TAG, "4. startLocationService: location tracking started...");
+            Timber.d( "4. startLocationService: location tracking started...");
             startService(intent);
         }
     }
@@ -234,7 +237,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
     }
 
     private void getLocationPermission(){
-        Log.d(TAG, "getLocationPermission: getting location permissions");
+        Timber.d( "getLocationPermission: getting location permissions");
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION};
 
@@ -271,7 +274,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
     }*/
 
     private void initMap(){
-        Log.d(TAG, "initMap: initializing map");
+        Timber.d( "initMap: initializing map");
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
@@ -289,7 +292,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.d(TAG, "onRequestPermissionsResult: called.");
+        Timber.d( "onRequestPermissionsResult: called.");
         locationPermissionsGranted = false;
 
         switch(requestCode) {
@@ -298,11 +301,11 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
                     for(int i = 0; i < grantResults.length; i++){
                         if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
                             locationPermissionsGranted = false;
-                            Log.d(TAG, "onRequestPermissionsResult: permission failed");
+                            Timber.d( "onRequestPermissionsResult: permission failed");
                             return;
                         }
                     }
-                    Log.d(TAG, "onRequestPermissionsResult: permission granted");
+                    Timber.d( "onRequestPermissionsResult: permission granted");
                     locationPermissionsGranted = true;
                     //initialize our map
                     initMap();
@@ -313,7 +316,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
 
     private void moveCamera(float zoom, String title){
         LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-        Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
+        Timber.d( "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
         MarkerOptions options = new MarkerOptions()
@@ -359,7 +362,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
     }
 
     private void getDeviceLocation() {
-        Log.d(TAG, "getDeviceLocation: getting the devices current location");
+        Timber.d( "getDeviceLocation: getting the devices current location");
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -369,7 +372,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
                 final Task location = fusedLocationProviderClient.getLastLocation();
                 location.addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
-                        Log.d(TAG, "onComplete: found location!");
+                        Timber.d( "onComplete: found location!");
                         myLocation = (Location) task.getResult();
 
                         displayEventPlace();
@@ -392,7 +395,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
     }
 
     private void calculateDirections() {
-        Log.d(TAG, "calculateDirections: calculating directions");
+        Timber.d( "calculateDirections: calculating directions");
 
         DirectionsApiRequest directions = new DirectionsApiRequest(geoApiContext);
         directions.alternatives(true);
@@ -408,11 +411,11 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
         directions.setCallback(new PendingResult.Callback<DirectionsResult>() {
             @Override
             public void onResult(DirectionsResult result) {
-                Log.d(TAG, "onResult: successfully retrieved directions.");
-                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
-                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
-                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
-                Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
+                Timber.d( "onResult: successfully retrieved directions.");
+                Timber.d( "calculateDirections: routes: %s", result.routes[0].toString());
+                Timber.d( "calculateDirections: duration: " + result.routes[0].legs[0].duration);
+                Timber.d( "calculateDirections: distance: " + result.routes[0].legs[0].distance);
+                Timber.d( "calculateDirections: geocodedWayPoints: %s", result.geocodedWaypoints[0].toString());
                 addPolylinesToMap(result);
             }
 
@@ -425,7 +428,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
 
     private void addPolylinesToMap(final DirectionsResult result) {
         new Handler(Looper.getMainLooper()).post(() -> {
-            Log.d(TAG, "run: result routes: " + result.routes.length);
+            Timber.d( "run: result routes: " + result.routes.length);
 
             if (polylineDataList.size() > 0) {
                 for (PolylineData polylineData: polylineDataList) {
@@ -438,7 +441,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
             double duration = 10000000;
 
             for (DirectionsRoute route: result.routes) {
-                Log.d(TAG, "run: leg: " + route.legs[0].toString());
+                Timber.d( "run: leg: " + route.legs[0].toString());
                 List<com.google.maps.model.LatLng> decodedPath = PolylineEncoding.decode(route.overviewPolyline.getEncodedPath());
 
                 List<LatLng> newDecodedPath = new ArrayList<>();
@@ -488,7 +491,7 @@ public class RunningEventActivity extends FragmentActivity implements OnMapReady
         int index = 0;
         for(PolylineData polylineData: polylineDataList){
             index++;
-            Log.d(TAG, "onPolylineClick: toString: " + polylineData.toString());
+            Timber.d( "onPolylineClick: toString: " + polylineData.toString());
             if(polyline.getId().equals(polylineData.getPolyline().getId())){
                 polylineData.getPolyline().setColor(ContextCompat.getColor(this, R.color.colorAccent));
                 polylineData.getPolyline().setZIndex(1);
