@@ -3,24 +3,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="8dp">
+    android:layout_height="wrap_content"
+    android:id="@+id/main_bootom_sheet"
+    android:layout_margin="8dp"
+    android:background="@drawable/add_event_shadow"
+    app:behavior_hideable="true"
+    app:behavior_peekHeight="120dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/name_text_input"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:startIconDrawable="@drawable/ic_create"
-        app:startIconContentDescription="@string/event_name_label"
-        app:endIconMode="clear_text"
-        app:errorEnabled="true">
+        android:orientation="horizontal"
+        android:layout_margin="8dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/cancel_event_bottom_sheet"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/event_name_label" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:text="@string/cancel"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"/>
+
+        <Button
+            android:id="@+id/save_event"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_bottom_sheet"
+            android:text="@string/save"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+    </RelativeLayout>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/name_text_input"
+        android:layout_margin="16dp"
+        android:background="@null"
+        android:hint="@string/event_name_label"/>
 
     <View
         android:layout_width="match_parent"
@@ -72,23 +93,5 @@
         app:icon="@drawable/ic_notifications"
         style="@style/Widget.MaterialComponents.Button.TextButton.Icon" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        android:layout_margin="8dp"/>
-
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/completed"
-        android:id="@+id/completed"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"/>
-
-    <Button
-        android:id="@+id/save_event"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/save" />
 
 </LinearLayout>

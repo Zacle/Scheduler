@@ -8,6 +8,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,45 +20,61 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.data.database.entity.Event;
 import com.zacle.scheduler.service.alarm.Alarm;
 import com.zacle.scheduler.service.alarm.EventAlarm;
-import com.zacle.scheduler.ui.addOrEdit.AddEditActivity;
+import com.zacle.scheduler.ui.addOrEdit.AddEditEvent;
+import com.zacle.scheduler.ui.addOrEdit.NotificationDialogFragment;
 import com.zacle.scheduler.ui.base.BaseFragment;
 import com.zacle.scheduler.ui.map.RunningEventActivity;
+import com.zacle.scheduler.utils.DateUtil;
 import com.zacle.scheduler.viewmodel.ViewModelProviderFactory;
 
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import co.chatsdk.core.session.ChatSDK;
 import co.chatsdk.core.utils.DisposableList;
+import timber.log.Timber;
 
+import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
-import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.DESTINATION_LAT;
-import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.DESTINATION_LONG;
-import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.NOTIFY;
-import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.NOTIFY_SETTINGS;
-import static com.zacle.scheduler.ui.addOrEdit.AddEditActivity.STATUS;
 import static com.zacle.scheduler.utils.EventStatus.COMING;
 import static com.zacle.scheduler.utils.EventStatus.RUNNING;
 
 // TODO refactor
-public class MainFragment extends BaseFragment implements EventAdapter.OnItemClickListener {
+public class MainFragment extends BaseFragment implements EventAdapter.OnItemClickListener,
+        DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener, NotificationDialogFragment.OnInputSelected {
 
     private static final String TAG = "MainFragment";
-    private static final String USER_AUTHENTICATED = "com.zacle.scheduler.ui.main.user_auth";
 
     private static final int ADD_EVENT_REQUEST = 1;
     private static final int UPDATE_EVENT_REQUEST = 2;
     public static final int RC_SIGN_IN = 900;
+    private static final int AUTOCOMPLETE_REQUEST_CODE_DESTINATION = 770;
 
     private MainViewModel viewModel;
     private Unbinder unbinder;
@@ -65,11 +84,46 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
     public RecyclerView recyclerView;
     @BindView(R.id.add_event)
     public FloatingActionButton floatingActionButton;
+    @BindView(R.id.touch_outside)
+    public View touch_outside;
+
+    // Bottom Sheet initialization
+    @BindView(R.id.main_bootom_sheet)
+    public LinearLayout main_bottom_sheet;
+
+    @BindView(R.id.name_text_input)
+    public EditText name_text;
+
+    @BindView(R.id.select_date)
+    public Button selected_date;
+
+    @BindView(R.id.select_time)
+    public Button selected_time;
+
+    @BindView(R.id.select_destination)
+    public Button selected_destination;
+
+    @BindView(R.id.add_notification)
+    public Button notification;
+
+    @BindView(R.id.save_event)
+    public Button save;
+
+    @BindView(R.id.cancel_event_bottom_sheet)
+    public Button cancel;
+
+    private BottomSheetBehavior sheetBehavior;
+
+    // End Bottom Sheet initialization
 
     @Inject
     ViewModelProviderFactory providerFactory;
 
     private OnFragmentInteractionListener mListener;
+    private AddEditEvent addEditEvent;
+    private PlacesClient placesClient;
+    private List<Place.Field> fields;
+    private Intent intent;
 
     // This is a list of extras that are passed to the login view
     protected HashMap<String, Object> extras = new HashMap<>();
@@ -146,12 +200,12 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
 
     @Override
     public void showMessage(String message) {
-
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void showMessage(int resId) {
-
+        Toast.makeText(getActivity(), getString(resId), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -171,7 +225,7 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
 
     @Override
     public void showSnackBar(int resId) {
-
+        Snackbar.make(getActivity().findViewById(android.R.id.content), resId, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -182,10 +236,44 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
 
     @Override
     protected void setUp() {
+        initBottomSheet();
         initFloatingActionButton();
         initRecyclerView();
         subscribeObservers();
         initSwipe();
+    }
+
+    private void initBottomSheet() {
+        sheetBehavior = BottomSheetBehavior.from(main_bottom_sheet);
+
+        sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        sheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        floatingActionButton.setVisibility(View.INVISIBLE);
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        touch_outside.setVisibility(View.GONE);
+                        break;
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        break;
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                        floatingActionButton.setVisibility(View.VISIBLE);
+                        resetUI();
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                touch_outside.setVisibility(View.VISIBLE);
+                touch_outside.setAlpha(slideOffset);
+            }
+        });
     }
 
     private void initSwipe() {
@@ -204,16 +292,27 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
                 Alarm alarm = new EventAlarm(getActivity(), event.getTime().getTime(), event.getNotification_time(), event.getNotification_settings());
                 alarm.cancelAlarm(event.getId());
 
-                Toast.makeText(getActivity(), "Event deleted", Toast.LENGTH_SHORT).show();
+                showMessage(R.string.event_deleted);
             }
         }).attachToRecyclerView(recyclerView);
     }
 
     private void initFloatingActionButton() {
         floatingActionButton.setOnClickListener(view -> {
-            Intent intent = AddEditActivity.newIntent(getActivity());
-            startActivityForResult(intent, ADD_EVENT_REQUEST);
+            initPlace();
+            initDateDialog();
+            initTimeDialog();
+            addEditEvent = new AddEditEvent(getActivity());
+            sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         });
+    }
+
+    private void resetUI() {
+        name_text.setText("");
+        selected_date.setText(getActivity().getString(R.string.select_date));
+        selected_time.setText(getActivity().getString(R.string.select_time));
+        notification.setText(getActivity().getString(R.string.notification));
+        selected_destination.setText(getActivity().getString(R.string.select_destination));
     }
 
     private void initRecyclerView() {
@@ -226,21 +325,21 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
 
     private void subscribeObservers() {
         viewModel = ViewModelProviders.of(this, providerFactory).get(MainViewModel.class);
-        Log.d(TAG, "subscribeObservers: initialized");
+        Timber.d("subscribeObservers: initialized");
 
         viewModel.getFutureEvents().observe(this, resource -> {
             if (resource != null) {
                 switch(resource.status) {
                     case LOADING:
-                        Log.d(TAG, "subscribeObservers: LOADING...");
+                        Timber.d("subscribeObservers: LOADING...");
                         break;
                     case SUCCESS:
-                        Log.d(TAG, "subscribeObservers: SUCCESS");
-                        Log.d(TAG, "subscribeObservers: list length = " + resource.data.size());
+                        Timber.d("subscribeObservers: SUCCESS");
+                        Timber.d("subscribeObservers: list length = %d", resource.data.size());
                         adapter.submitList(resource.data);
                         break;
                     case ERROR:
-                        Log.e(TAG, "subscribeObservers: ERROR: " + resource.message);
+                        Timber.e("subscribeObservers: ERROR: %s", resource.message);
                         break;
                 }
             }
@@ -252,59 +351,177 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
         super.onActivityResult(requestCode, resultCode, data);
         int INIT = -1;
 
-        if (requestCode == ADD_EVENT_REQUEST && resultCode == RESULT_OK) {
-            String name = data.getStringExtra(AddEditActivity.NAME);
-            long date = data.getLongExtra(AddEditActivity.DATE, INIT);
-            double destinationLat = data.getDoubleExtra(DESTINATION_LAT, INIT);
-            double destinationLong = data.getDoubleExtra(DESTINATION_LONG, INIT);
-            int status = data.getIntExtra(STATUS, 0);
-            int notification_time = data.getIntExtra(NOTIFY, INIT);
-            String notification_settings = data.getStringExtra(NOTIFY_SETTINGS);
-
-            Event event = new Event(name, new Date(date), destinationLat, destinationLong, notification_time, notification_settings, false, COMING);
-            viewModel.insert(event);
-
-            Alarm alarm = new EventAlarm(getActivity(), date, notification_time, notification_settings);
-            alarm.startAlarm(event.getId(), name);
-            Toast.makeText(getActivity(), "Event inserted", Toast.LENGTH_SHORT).show();
-
-        } else if (requestCode == UPDATE_EVENT_REQUEST && resultCode == RESULT_OK) {
-            int id = data.getIntExtra(AddEditActivity.ID, INIT);
-            String name = data.getStringExtra(AddEditActivity.NAME);
-            long date = data.getLongExtra(AddEditActivity.DATE, INIT);
-            double destinationLat = data.getDoubleExtra(DESTINATION_LAT, INIT);
-            double destinationLong = data.getDoubleExtra(DESTINATION_LONG, INIT);
-            int status = data.getIntExtra(STATUS, 0);
-            int notification_time = data.getIntExtra(NOTIFY, INIT);
-            String notification_settings = data.getStringExtra(NOTIFY_SETTINGS);
-
-            Event event = new Event(name, new Date(date), destinationLat, destinationLong, notification_time, notification_settings, false, (status == 0) ? COMING : RUNNING);
-            event.setId(id);
-            viewModel.update(event);
-
-            Alarm alarm = new EventAlarm(getActivity(), date, notification_time, notification_settings);
-            alarm.editAlarm(event.getId(), name);
-
-            Toast.makeText(getActivity(), "Event updated", Toast.LENGTH_SHORT).show();
-        } else if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
-            Toast.makeText(getActivity(), "Authenticated", Toast.LENGTH_SHORT).show();
+        if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
+            showMessage(R.string.authenticated);
+        } else if (requestCode == AUTOCOMPLETE_REQUEST_CODE_DESTINATION) {
+            if (resultCode == RESULT_OK) {
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                selected_destination.setText(place.getAddress());
+                LatLng latLng = place.getLatLng();
+                addEditEvent.setDestination(latLng.latitude, latLng.longitude, true);
+                Log.i(TAG, "Place: " + place.getAddress() + ", " + place.getId());
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Status status = Autocomplete.getStatusFromIntent(data);
+                Timber.i(status.getStatusMessage());
+            } else if (resultCode == RESULT_CANCELED) {
+            }
         }
     }
 
     @Override
     public void onItemClick(Event event) {
-        Intent intent = AddEditActivity.newIntent(getActivity(), event.getId(), event.getName(), event.getTime().getTime(),
+        addEditEvent = new AddEditEvent(getActivity(), event.getId(), event.getName(), event.getTime().getTime(),
                 event.getDestinationLat(), event.getDestinationLong(), event.getNotification_time(),
-                event.getNotification_settings(), COMING);
+                event.getNotification_settings(), COMING.getCode());
 
-        startActivityForResult(intent, UPDATE_EVENT_REQUEST);
+        initUI();
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    private void initUI() {
+        name_text.setText(addEditEvent.getName());
+        selected_date.setText(DateUtil.formatDate(addEditEvent.getDate()));
+        selected_time.setText(DateUtil.formatTime(addEditEvent.getDate()));
+        notification.setText(addEditEvent.getNotificationText());
+        selected_destination.setText(addEditEvent.getDestinationLocation());
+        initPlace();
+        initDateDialog();
+        initTimeDialog();
+    }
+
+    private void initPlace() {
+        String apiKey = getString(R.string.google_maps_key);
+        if (!Places.isInitialized()) {
+            Places.initialize(getActivity().getApplicationContext(), apiKey);
+        }
+        placesClient = Places.createClient(getActivity());
+        fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
+        intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(getActivity());
+    }
+
+    // TODO replace with Material Design
+    private void initDateDialog() {
+        selected_date.setOnClickListener(view -> {
+            Calendar now = Calendar.getInstance();
+
+            DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(this,
+                    now.get(Calendar.YEAR),
+                    now.get(Calendar.MONTH),
+                    now.get(Calendar.DAY_OF_MONTH));
+            datePickerDialog.dismissOnPause(true);
+            datePickerDialog.showYearPickerFirst(false);
+            datePickerDialog.setTitle(getString(R.string.select_event_date));
+            datePickerDialog.show(getActivity().getSupportFragmentManager(), "DatePickerDialog");
+        });
+    }
+
+    // TODO replace with Material Design
+    private void initTimeDialog() {
+        selected_time.setOnClickListener(view -> {
+            Calendar now = Calendar.getInstance();
+
+            TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(this,
+                    now.get(Calendar.HOUR_OF_DAY),
+                    now.get(Calendar.MINUTE),
+                    true);
+            timePickerDialog.show(getActivity().getSupportFragmentManager(), "TimePickerDialog");
+        });
+    }
+
+    @Override
+    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+        addEditEvent.setDate(year, monthOfYear, dayOfMonth);
+        Date d = DateUtil.getDate(year, monthOfYear, dayOfMonth, 0, 0);
+        selected_date.setText(DateUtil.formatDate(d.getTime()));
+    }
+
+    @Override
+    public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
+        String hourString = hourOfDay < 10 ? "0" + hourOfDay : "" + hourOfDay;
+        String minuteString = minute < 10 ? "0" + minute : "" + minute;
+        addEditEvent.setTime(hourOfDay, minute);
+        selected_time.setText(hourString + ":" + minuteString);
+    }
+
+    @OnClick(R.id.select_destination)
+    public void searchDestinationLocation() {
+        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE_DESTINATION);
+    }
+
+    @OnClick(R.id.add_notification)
+    public void setNotificationTime() {
+        NotificationDialogFragment notificationDialogFragment = NotificationDialogFragment.newInstance(
+                addEditEvent.getNotification_time(),
+                addEditEvent.getNotification_settings()
+        );
+        notificationDialogFragment.setTargetFragment(MainFragment.this, 1);
+        notificationDialogFragment.show(getActivity().getSupportFragmentManager(), "NotificationDialogFragment");
+    }
+
+    @OnClick(R.id.save_event)
+    public void saveEvent() {
+        if (!addEditEvent.checkAndSaveName(name_text.getText().toString())) {
+            showSnackBar(R.string.enter_name);
+            return;
+        }
+        if (!addEditEvent.checkAndSaveDate()) {
+            showSnackBar(R.string.select_date_or_time);
+            return;
+        }
+        if (!addEditEvent.checkDestination()) {
+            showSnackBar(R.string.select_destination_location);
+            return;
+        }
+
+        if (addEditEvent.isNewEvent()) {
+            save(addEditEvent.getName(), addEditEvent.getDate(), addEditEvent.getDestinationLat(),
+                    addEditEvent.getDestinationLong(), addEditEvent.getStatus(),
+                    addEditEvent.getNotification_time(), addEditEvent.getNotification_settings());
+        } else {
+            save(addEditEvent.getId(), addEditEvent.getName(), addEditEvent.getDate(), addEditEvent.getDestinationLat(),
+                    addEditEvent.getDestinationLong(), addEditEvent.getStatus(),
+                    addEditEvent.getNotification_time(), addEditEvent.getNotification_settings());
+        }
+        sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+    }
+
+    @OnClick(R.id.cancel_event_bottom_sheet)
+    public void cancelEvent() {
+        sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+    }
+
+    @OnClick(R.id.touch_outside)
+    public void clickOutside() {
+        sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    }
+
+    private void save(String name, long date, double destinationLat, double destinationLong, int status,
+                      int notification_time, String notification_settings) {
+        Event event = new Event(name, new Date(date), destinationLat, destinationLong, notification_time, notification_settings, false, COMING);
+        viewModel.insert(event);
+
+        Alarm alarm = new EventAlarm(getActivity(), date, notification_time, notification_settings);
+        alarm.startAlarm(event.getId(), name);
+        showMessage(R.string.event_inserted);
+    }
+
+    private void save(int id, String name, long date, double destinationLat, double destinationLong, int status,
+                      int notification_time, String notification_settings) {
+        Event event = new Event(name, new Date(date), destinationLat, destinationLong, notification_time, notification_settings, false, (status == 0) ? COMING : RUNNING);
+        event.setId(id);
+        viewModel.update(event);
+
+        Alarm alarm = new EventAlarm(getActivity(), date, notification_time, notification_settings);
+        alarm.editAlarm(event.getId(), name);
+
+        showMessage(R.string.event_updated);
     }
 
     @Override
     public void onLunchClick(Event event) {
 
         if (serviceIsRunningInForeground(getActivity())) {
-            Toast.makeText(getActivity(), "An event is already running", Toast.LENGTH_SHORT).show();
+            showMessage(R.string.event_already_running);
         } else {
             event.setStatus(RUNNING);
             viewModel.update(event);
@@ -322,17 +539,28 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
      */
     public boolean serviceIsRunningInForeground(Context context) {
 
-        ActivityManager manager = (ActivityManager) context.getSystemService(
-                Context.ACTIVITY_SERVICE);
-        Log.d(TAG, "serviceIsRunningInForeground: checking... " + manager.getRunningServices(Integer.MAX_VALUE).size());
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        Timber.d("serviceIsRunningInForeground: checking... %s", manager.getRunningServices(Integer.MAX_VALUE).size());
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(
                 Integer.MAX_VALUE)) {
             if ("com.zacle.scheduler.service.location.LocationUpdatesService".equals(service.service.getClassName())) {
-                Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                Timber.d("isLocationServiceRunning: location service is already running.");
                 return true;
             }
-            Log.d(TAG, "serviceIsRunningInForeground: = " + service.service.getClassName());
+            Timber.d("serviceIsRunningInForeground: = %s", service.service.getClassName());
         }
         return false;
+    }
+
+    @Override
+    public void sendInput(String time, String time_settings) {
+        try {
+            addEditEvent.setNotification_time(Integer.parseInt(time));
+        } catch (NumberFormatException nf) {
+            Timber.e("sendInput: parse exception");
+        }
+        addEditEvent.setNotification_settings(time_settings);
+
+        notification.setText(addEditEvent.getNotificationText());
     }
 }

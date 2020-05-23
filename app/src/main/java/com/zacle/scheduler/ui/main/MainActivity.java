@@ -19,13 +19,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -33,7 +31,6 @@ import com.zacle.scheduler.R;
 import com.zacle.scheduler.data.model.User;
 import com.zacle.scheduler.data.model.UserLocation;
 import com.zacle.scheduler.ui.base.BaseActivity;
-import com.zacle.scheduler.ui.chat.ChatFragment;
 
 import co.chatsdk.core.session.ChatSDK;
 import timber.log.Timber;
@@ -48,7 +45,6 @@ public class MainActivity extends BaseActivity {
 
     private static final String TAG = "MainActivity";
     public static final String ID = "com.zacle.scheduler.ui.main.id";
-    public static final int RC_SIGN_IN = 900;
 
     private boolean locationPermissionGranted = false;
 
@@ -72,10 +68,6 @@ public class MainActivity extends BaseActivity {
             } else {
                 saveUser();
             }
-        }
-
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MainFragment()).commit();
         }
 
         Intent intent = getIntent();
@@ -147,27 +139,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void setUp() {
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(navListener);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MainFragment()).commit();
     }
-
-    private BottomNavigationView.OnNavigationItemSelectedListener navListener =
-            item -> {
-                Fragment selectedFragment = null;
-
-                switch (item.getItemId()) {
-                    case R.id.nav_schedule:
-                        selectedFragment = new MainFragment();
-                        break;
-                    case R.id.nav_chats:
-                        selectedFragment = new ChatFragment();
-                        break;
-                }
-
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
-
-                return true;
-            };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -206,6 +179,10 @@ public class MainActivity extends BaseActivity {
         return false;
     }
 
+    private void showMessage(int resId) {
+        Toast.makeText(this, getString(resId), Toast.LENGTH_SHORT).show();
+    }
+
     private boolean isServiceOK() {
         Timber.tag(TAG).d("isServicesOK: checking google services version");
 
@@ -221,7 +198,7 @@ public class MainActivity extends BaseActivity {
             Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(MainActivity.this, available, ERROR_DIALOG_REQUEST);
             dialog.show();
         } else {
-            Toast.makeText(this, "You can't make map requests", Toast.LENGTH_SHORT).show();
+            showMessage(R.string.no_map_service);
         }
         return false;
     }
@@ -238,9 +215,9 @@ public class MainActivity extends BaseActivity {
 
     private void buildAlertMessageNoGps() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
+        builder.setMessage(getString(R.string.gps_requirement))
                 .setCancelable(false)
-                .setPositiveButton("Yes", (dialog, id) -> {
+                .setPositiveButton(getString(R.string.alarm_ok_button), (dialog, id) -> {
                     Intent enableGpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                     startActivityForResult(enableGpsIntent, PERMISSIONS_REQUEST_ENABLE_GPS);
                 });

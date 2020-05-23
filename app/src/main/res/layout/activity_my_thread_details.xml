@@ -18,14 +18,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
-            app:statusBarScrim="@android:color/transparent"
+            app:statusBarScrim="@color/colorPrimary"
             app:contentScrim="@android:color/transparent"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
 
             <ImageView
                 android:id="@+id/thread_detail_image"
-                android:src="@drawable/barca"
+                android:src="@drawable/profile_default"
                 app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/detail_backdrop_height"

@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -99,9 +98,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
 
     @BindView(R.id.add_notification)
     public Button notification;
-
-    @BindView(R.id.completed)
-    public CheckBox isCompleted;
 
     @BindView(R.id.save_event)
     public Button save;
@@ -323,7 +319,6 @@ public class AddEditFragment extends BaseFragment implements TimePickerDialog.On
         String hourString = hourOfDay < 10 ? "0" + hourOfDay : "" + hourOfDay;
         String minuteString = minute < 10 ? "0" + minute : "" + minute;
         String secondString = second < 10 ? "0" + second : "" + second;
-        String time = "You picked the following time: " + hourString + "h" + minuteString + "m" + secondString + "s";
         newHour = hourOfDay;
         newMinute = minute;
         selected_time.setText(hourString + ":" + minuteString);

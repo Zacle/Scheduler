@@ -15,7 +15,7 @@
     // Hints
     <string name="schedules_first_text">Events name</string>
     <string name="schedules_second_text">Wed 18/03/20, 04:30 PM</string>
-    <string name="event_name_label">Name</string>
+    <string name="event_name_label">Event Name</string>
     <string name="select_date">Select Date</string>
     <string name="select_time">Select Time</string>
     <string name="select_source">Select Source Location</string>
@@ -37,7 +37,7 @@
 
     // Add or Edit event
     <string name="enter_name">Please enter event name</string>
-    <string name="select_date_or_time">Please select date and time</string>
+    <string name="select_date_or_time">Please select valid date and time</string>
     <string name="select_source_location">Please select source location</string>
     <string name="select_destination_location">Please select destination location</string>
 
@@ -88,5 +88,21 @@
     <string name="users_location_collection">User Locations</string>
     <string name="collapsing_toolbar">Collapsing Toolbar</string>
     <string name="title_activity_chat_user_locations">User Locations</string>
+
+    // GPS requirement
+    <string name="gps_requirement">This application requires GPS to work properly, do you want to enable it?</string>
+
+    // Maps errors
+    <string name="no_map_service">You cannot make map requests</string>
+    <string name="event_deleted">Event deleted</string>
+    <string name="event_already_running">An event is already running</string>
+    <string name="minute">Minute</string>
+    <string name="hour">Hour</string>
+    <string name="before">before</string>
+    <string name="date_set">You picked the following date:</string>
+    <string name="select_event_date">Select Event date</string>
+    <string name="authenticated">Authenticated</string>
+    <string name="event_updated">Event updated</string>
+    <string name="event_inserted">Event inserted</string>
 
 </resources>

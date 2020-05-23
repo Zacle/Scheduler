@@ -105,7 +105,7 @@ public class MyThreadDetailsActivity extends ThreadDetailsActivity {
 //            image.setOnClickListener(v -> zoomImageFromThumbnail(image, thread.getImageUrl()));
             Glide.with(this)
                     .load(thread.getImageUrl())
-                    .placeholder(R.drawable.barca)
+                    .placeholder(R.drawable.profile_default)
                     .centerCrop()
                     .into(image);
         } else {

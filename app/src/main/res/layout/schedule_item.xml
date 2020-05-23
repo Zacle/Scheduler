@@ -17,6 +17,7 @@
             android:layout_height="50dp"
             android:padding="2dp"
             android:id="@+id/schedule_status"
+            android:background="@drawable/circle_shape"
             android:src="@drawable/ic_alarm"/>
 
         <TextView
@@ -29,6 +30,7 @@
             android:textColor="@android:color/black"
             android:textSize="20sp"
             android:textStyle="bold"
+            android:layout_marginLeft="8dp"
             android:id="@+id/event_name"/>
 
         <TextView
@@ -45,10 +47,11 @@
 
         <ImageView
             android:id="@+id/lunch_event"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentTop="true"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/circle_shape"
             android:src="@drawable/ic_launch"
             android:layout_alignParentRight="true" />
 

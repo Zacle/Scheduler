@@ -54,7 +54,7 @@ public class SchedulerClusterManagerRender extends DefaultClusterRenderer<Cluste
 
         Glide.with(context)
                 .load(item.getUser().getAvatarURL())
-                .placeholder(R.drawable.barca)
+                .placeholder(R.drawable.profile_default)
                 .centerCrop()
                 .into(imageView);
 

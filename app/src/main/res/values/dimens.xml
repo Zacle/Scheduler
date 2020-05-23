@@ -8,4 +8,5 @@
     <dimen name="detail_backdrop_height">250dp</dimen>
     <dimen name="custom_marker_image">50dp</dimen>
     <dimen name="custom_marker_padding">2dp</dimen>
+    <dimen name="main_fab">20dp</dimen>
 </resources>
