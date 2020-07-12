@@ -2,7 +2,6 @@ package com.zacle.scheduler.ui.addOrEdit;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,8 @@ import androidx.fragment.app.DialogFragment;
 import com.google.android.material.textfield.TextInputLayout;
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.utils.AppConstants;
+
+import timber.log.Timber;
 
 public class NotificationDialogFragment extends DialogFragment {
 
@@ -43,7 +44,7 @@ public class NotificationDialogFragment extends DialogFragment {
         return dialogFragment;
     }
 
-    public interface OnInputSelected{
+    public interface OnInputSelected {
         void sendInput(String time, String time_settings);
     }
 
@@ -99,13 +100,13 @@ public class NotificationDialogFragment extends DialogFragment {
         try {
             onInputSelected = (OnInputSelected) getTargetFragment();
         } catch (ClassCastException e){
-            Log.e(TAG, "onAttach: ClassCastException : " + e.getMessage() );
+            Timber.e("onAttach: ClassCastException : " + e.getMessage() );
         }
     }
 
     public void settings(int number, String setting) {
         time.getEditText().setText("" + number);
-        Log.d(TAG, "settings: " + setting);
+        Timber.d("settings: " + setting);
 
         if (setting.equals(AppConstants.MINUTES)) {
             time_settings.check(R.id.notification_minutes);

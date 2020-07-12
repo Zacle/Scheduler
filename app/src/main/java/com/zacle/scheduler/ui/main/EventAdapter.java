@@ -1,9 +1,14 @@
 package com.zacle.scheduler.ui.main;
 
+import android.animation.ObjectAnimator;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,6 +30,8 @@ import static com.zacle.scheduler.utils.EventStatus.RUNNING;
 
 public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
     private OnItemClickListener listener;
+
+    private SparseBooleanArray expandState = new SparseBooleanArray();
 
     public EventAdapter() {
         super(DIFF_CALLBACK);
@@ -59,22 +66,59 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
         holder.setStatus(event);
         holder.setName(event);
         holder.setDate(event);
+
+        final boolean isExpanded = expandState.get(position);
+
+        holder.getExpandableLayout().setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        holder.getExpand().setRotation(isExpanded ? 180f : 0f);
+        holder.getExpand().setOnClickListener(v -> onClickExpand(holder.getExpandableLayout(),
+                holder.getExpand(), position));
+    }
+
+    private void onClickExpand(final LinearLayout expandableLayout, final ImageView expand, final  int i) {
+
+        if (expandableLayout.getVisibility() == View.VISIBLE) {
+            createRotateAnimator(expand, 180f, 0f).start();
+            expandableLayout.setVisibility(View.GONE);
+            expandState.put(i, false);
+        } else {
+            createRotateAnimator(expand, 0f, 180f).start();
+            expandableLayout.setVisibility(View.VISIBLE);
+            expandState.put(i, true);
+        }
+    }
+
+
+    private ObjectAnimator createRotateAnimator(final View target, final float from, final float to) {
+        ObjectAnimator animator = ObjectAnimator.ofFloat(target, "rotation", from, to);
+        animator.setDuration(300);
+        animator.setInterpolator(new LinearInterpolator());
+        return animator;
     }
 
     public Event getEventAt(int position) {
         return getItem(position);
     }
 
+    public void initExpandable(int size) {
+        for (int i = 0; i < size; i++) {
+            expandState.append(i, false);
+        }
+    }
+
     public class EventHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.schedule_status) ImageView status;
         @BindView(R.id.event_name) TextView name;
         @BindView(R.id.event_date) TextView date;
-        @BindView(R.id.lunch_event) ImageView lunch;
+        @BindView(R.id.expand) ImageView expand;
+        @BindView(R.id.expandableLayout) LinearLayout expandableLayout;
+        @BindView(R.id.lunch_event) Button lunch;
+        @BindView(R.id.edit_event) Button edit;
+        @BindView(R.id.delete_event) Button delete;
 
         public EventHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            itemView.setOnClickListener(view -> onClick());
         }
 
         private void setStatus(Event event) {
@@ -96,13 +140,6 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
             date.setText(formatedDate);
         }
 
-        private void onClick() {
-            int position = getAdapterPosition();
-            if (listener != null && position != RecyclerView.NO_POSITION) {
-                listener.onItemClick(getItem(position));
-            }
-        }
-
         @OnClick(R.id.lunch_event)
         public void lunchMap() {
             int position = getAdapterPosition();
@@ -110,11 +147,36 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventHolder> {
                 listener.onLunchClick(getItem(position));
             }
         }
+
+        @OnClick(R.id.edit_event)
+        public void editEvent() {
+            int position = getAdapterPosition();
+            if (listener != null && position != RecyclerView.NO_POSITION) {
+                listener.onEditClick(getItem(position));
+            }
+        }
+
+        @OnClick(R.id.delete_event)
+        public void deleteEvent() {
+            int position = getAdapterPosition();
+            if (listener != null && position != RecyclerView.NO_POSITION) {
+                listener.onDeleteClick(getItem(position));
+            }
+        }
+
+        public LinearLayout getExpandableLayout() {
+            return expandableLayout;
+        }
+
+        public ImageView getExpand() {
+            return expand;
+        }
     }
 
     public interface OnItemClickListener {
-        void onItemClick(Event event);
-        void onLunchClick(Event evnt);
+        void onLunchClick(Event event);
+        void onEditClick(Event event);
+        void onDeleteClick(Event event);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {

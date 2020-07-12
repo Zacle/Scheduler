@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zacle.scheduler">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -36,7 +35,7 @@
 
         <activity
             android:name=".ui.chat.locations.ChatUserLocationsActivity"
-            android:label="@string/title_activity_chat_user_locations"></activity>
+            android:label="@string/title_activity_chat_user_locations" />
         <activity
             android:name=".ui.map.RunningEventActivity"
             android:label="@string/title_activity_running_event" />
@@ -64,6 +63,9 @@
             android:name=".ui.chat.threads.MyThreadDetailsActivity"
             android:parentActivityName="co.chatsdk.ui.chat.ChatActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ui.exit.ExitActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:autoRemoveFromRecents="true"/>
 
         <meta-data
             android:name="com.google.android.gms.version"

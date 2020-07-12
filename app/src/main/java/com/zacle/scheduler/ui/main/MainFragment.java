@@ -16,7 +16,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,6 +41,7 @@ import com.zacle.scheduler.ui.addOrEdit.NotificationDialogFragment;
 import com.zacle.scheduler.ui.base.BaseFragment;
 import com.zacle.scheduler.ui.map.RunningEventActivity;
 import com.zacle.scheduler.utils.DateUtil;
+import com.zacle.scheduler.utils.DeleteDialogFragment;
 import com.zacle.scheduler.viewmodel.ViewModelProviderFactory;
 
 import java.util.Arrays;
@@ -67,7 +67,8 @@ import static com.zacle.scheduler.utils.EventStatus.RUNNING;
 
 // TODO refactor
 public class MainFragment extends BaseFragment implements EventAdapter.OnItemClickListener,
-        DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener, NotificationDialogFragment.OnInputSelected {
+        DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener, NotificationDialogFragment.OnInputSelected,
+        DeleteDialogFragment.DeleteDialogListener {
 
     private static final String TAG = "MainFragment";
 
@@ -88,7 +89,7 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
     public View touch_outside;
 
     // Bottom Sheet initialization
-    @BindView(R.id.main_bootom_sheet)
+    @BindView(R.id.main_bottom_sheet)
     public LinearLayout main_bottom_sheet;
 
     @BindView(R.id.name_text_input)
@@ -240,7 +241,6 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
         initFloatingActionButton();
         initRecyclerView();
         subscribeObservers();
-        initSwipe();
     }
 
     private void initBottomSheet() {
@@ -274,27 +274,6 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
                 touch_outside.setAlpha(slideOffset);
             }
         });
-    }
-
-    private void initSwipe() {
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                Event event = adapter.getEventAt(viewHolder.getAdapterPosition());
-
-                viewModel.delete(event);
-
-                Alarm alarm = new EventAlarm(getActivity(), event.getTime().getTime(), event.getNotification_time(), event.getNotification_settings());
-                alarm.cancelAlarm(event.getId());
-
-                showMessage(R.string.event_deleted);
-            }
-        }).attachToRecyclerView(recyclerView);
     }
 
     private void initFloatingActionButton() {
@@ -336,6 +315,7 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
                     case SUCCESS:
                         Timber.d("subscribeObservers: SUCCESS");
                         Timber.d("subscribeObservers: list length = %d", resource.data.size());
+                        adapter.initExpandable(resource.data.size());
                         adapter.submitList(resource.data);
                         break;
                     case ERROR:
@@ -366,16 +346,6 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
             } else if (resultCode == RESULT_CANCELED) {
             }
         }
-    }
-
-    @Override
-    public void onItemClick(Event event) {
-        addEditEvent = new AddEditEvent(getActivity(), event.getId(), event.getName(), event.getTime().getTime(),
-                event.getDestinationLat(), event.getDestinationLong(), event.getNotification_time(),
-                event.getNotification_settings(), COMING.getCode());
-
-        initUI();
-        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
     private void initUI() {
@@ -532,6 +502,28 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
         }
     }
 
+    @Override
+    public void onEditClick(Event event) {
+        addEditEvent = new AddEditEvent(getActivity(), event.getId(), event.getName(), event.getTime().getTime(),
+                event.getDestinationLat(), event.getDestinationLong(), event.getNotification_time(),
+                event.getNotification_settings(), event.getStatus().getCode());
+
+        initUI();
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    @Override
+    public void onDeleteClick(Event event) {
+        openDialog(event);
+    }
+
+    private void openDialog(Event event) {
+        DeleteDialogFragment dialog = new DeleteDialogFragment();
+        dialog.setEvent(event);
+        dialog.setTargetFragment(MainFragment.this, 1);
+        dialog.show(getActivity().getSupportFragmentManager(), "");
+    }
+
     /**
      * Returns true if there is a foreground service.
      *
@@ -562,5 +554,15 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
         addEditEvent.setNotification_settings(time_settings);
 
         notification.setText(addEditEvent.getNotificationText());
+    }
+
+    @Override
+    public void onYesClicked(Event event) {
+        viewModel.delete(event);
+
+        Alarm alarm = new EventAlarm(getActivity(), event.getTime().getTime(), event.getNotification_time(), event.getNotification_settings());
+        alarm.cancelAlarm(event.getId());
+
+        showMessage(R.string.event_deleted);
     }
 }

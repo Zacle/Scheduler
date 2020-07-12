@@ -32,7 +32,10 @@ import com.zacle.scheduler.data.model.User;
 import com.zacle.scheduler.data.model.UserLocation;
 import com.zacle.scheduler.ui.base.BaseActivity;
 
+import java.util.HashMap;
+
 import co.chatsdk.core.session.ChatSDK;
+import co.chatsdk.core.utils.DisposableList;
 import timber.log.Timber;
 
 import static com.zacle.scheduler.utils.AppConstants.COURSE_LOCATION;
@@ -45,6 +48,7 @@ public class MainActivity extends BaseActivity {
 
     private static final String TAG = "MainActivity";
     public static final String ID = "com.zacle.scheduler.ui.main.id";
+    public static final int RC_SIGN_IN = 901;
 
     private boolean locationPermissionGranted = false;
 
@@ -52,6 +56,10 @@ public class MainActivity extends BaseActivity {
     private UserLocation userLocation;
     private FirebaseFirestore db;
     private FusedLocationProviderClient fusedLocationProvider;
+
+    // This is a list of extras that are passed to the login view
+    private HashMap<String, Object> extras = new HashMap<>();
+    private DisposableList disposableList = new DisposableList();
 
 
     @Override
@@ -122,9 +130,9 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    private void saveUserLocation(){
+    private void saveUserLocation() {
 
-        if(userLocation != null){
+        if(userLocation != null) {
             DocumentReference locationRef = db
                     .collection(getString(R.string.users_location_collection))
                     .document(user.getId());
@@ -235,20 +243,20 @@ public class MainActivity extends BaseActivity {
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION};
 
-        if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
                 locationPermissionGranted = true;
                 saveUser();
 
-            }else{
+            } else {
                 ActivityCompat.requestPermissions(this,
                         permissions,
                         LOCATION_PERMISSION_REQUEST_CODE);
             }
-        }else{
+        } else {
             ActivityCompat.requestPermissions(this,
                     permissions,
                     LOCATION_PERMISSION_REQUEST_CODE);
@@ -270,5 +278,11 @@ public class MainActivity extends BaseActivity {
             }
         }
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disposableList.dispose();
     }
 }
