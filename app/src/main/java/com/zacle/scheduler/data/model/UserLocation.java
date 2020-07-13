@@ -15,14 +15,16 @@ public class UserLocation implements Parcelable {
     private GeoPoint geoPoint;
     private @ServerTimestamp Date time;
     private String duration;
+    private long timeLeft = 0;
 
     public UserLocation() {}
 
-    public UserLocation(User user, GeoPoint geoPoint, Date time, String duration) {
+    public UserLocation(User user, GeoPoint geoPoint, Date time, String duration, long timeLeft) {
         this.user = user;
         this.geoPoint = geoPoint;
         this.time = time;
         this.duration = duration;
+        this.timeLeft = timeLeft;
     }
 
     protected UserLocation(Parcel in) {
@@ -76,6 +78,14 @@ public class UserLocation implements Parcelable {
         this.duration = duration;
     }
 
+    public long getTimeLeft() {
+        return timeLeft;
+    }
+
+    public void setTimeLeft(long timeLeft) {
+        this.timeLeft = timeLeft;
+    }
+
     @Override
     public String toString() {
         return "UserLocation{" +
@@ -83,6 +93,7 @@ public class UserLocation implements Parcelable {
                 ", geo_point=" + geoPoint +
                 ", timestamp=" + time +
                 ", duration=" + duration +
+                ", timeLeft=" + timeLeft +
                 '}';
     }
 

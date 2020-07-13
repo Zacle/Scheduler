@@ -440,7 +440,7 @@ public class LocationUpdatesService extends Service {
 
                     durationText = "Remaining " + durationText;
 
-                    saveUserLocation(location, durationText);
+                    saveUserLocation(location, durationText, duration.inSeconds);
                 }
 
                 @Override
@@ -450,13 +450,13 @@ public class LocationUpdatesService extends Service {
             });
     }
 
-    private void saveUserLocation(Location location, String durationText) {
+    private void saveUserLocation(Location location, String durationText, long timeLeft) {
         try {
             co.chatsdk.core.dao.User currentUser = ChatSDK.currentUser();
             if (currentUser != null) {
                 User user = new User(currentUser.getEntityID(), currentUser.getName(), currentUser.getAvatarURL());
                 GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                UserLocation userLocation = new UserLocation(user, geoPoint, null, durationText);
+                UserLocation userLocation = new UserLocation(user, geoPoint, null, durationText, timeLeft);
 
                 DocumentReference userLocationRef = FirebaseFirestore.getInstance()
                         .collection(getString(R.string.users_location_collection))

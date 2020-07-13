@@ -7,11 +7,15 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,19 +23,19 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.maps.android.clustering.ClusterManager;
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.data.model.ClusterMarker;
 import com.zacle.scheduler.data.model.UserLocation;
+import com.zacle.scheduler.ui.chat.adapter.CurrentLocationsAdapter;
 import com.zacle.scheduler.utils.SchedulerClusterManagerRender;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import co.chatsdk.core.dao.Thread;
-import co.chatsdk.core.dao.User;
 import co.chatsdk.core.session.ChatSDK;
 import timber.log.Timber;
 
@@ -53,9 +57,7 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
     private boolean locationPermissionsGranted = false;
 
     private GoogleMap mMap;
-    private Thread thread;
     private FirebaseFirestore db;
-    private List<User> users = new ArrayList<>();
     private List<UserLocation> userLocations = new ArrayList<>();
     private UserLocation userLocation;
     private ClusterManager<ClusterMarker> clusterManager;
@@ -63,6 +65,11 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
     private List<ClusterMarker> clusterMarkers = new ArrayList<>();
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
+    private CurrentLocationsAdapter adapter;
+    private BottomSheetBehavior sheetBehavior;
+
+    public RecyclerView recyclerView;
+    public LinearLayout layout;
 
     public static Intent newIntent(Context context, String name) {
         Intent intent = new Intent(context, ChatUserLocationsActivity.class);
@@ -78,11 +85,42 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
 
         db = FirebaseFirestore.getInstance();
 
+        initRecyclerView();
+
+        initBottomSheet();
+
         verifyIntent();
 
         setUserLocation();
 
         getLocationPermission();
+    }
+
+    private void initBottomSheet() {
+        layout = findViewById(R.id.time_bottom_sheet);
+
+        sheetBehavior = BottomSheetBehavior.from(layout);
+
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        sheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        if (sheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                            sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        } else if (sheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+                            sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                        }
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+            }
+        });
     }
 
     private void verifyIntent() {
@@ -98,9 +136,7 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
             }
         }
 
-        if (thread_name != null && !thread_name.isEmpty()) {
-            thread = ChatSDK.db().fetchThreadWithEntityID(thread_name);
-        } else {
+        if (thread_name == null || thread_name.isEmpty()) {
             finish();
         }
     }
@@ -140,6 +176,16 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
                     permissions,
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
+    }
+
+
+    private void initRecyclerView() {
+        recyclerView = findViewById(R.id.users_list_time);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setNestedScrollingEnabled(true);
+        adapter = new CurrentLocationsAdapter(this);
+        recyclerView.setAdapter(adapter);
     }
 
 
@@ -238,7 +284,7 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
     private void addMarkers() {
         if (mMap != null) {
             if (clusterManager == null) {
-                clusterManager = new ClusterManager<ClusterMarker>(getApplicationContext(), mMap);
+                clusterManager = new ClusterManager<>(getApplicationContext(), mMap);
             }
             if (clusterManagerRender == null) {
                 clusterManagerRender = new SchedulerClusterManagerRender(
@@ -287,7 +333,8 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
     private void retrieveUserLocations() {
         Timber.d("retrieveUserLocations: retrieving location of all users in the chatroom.");
 
-        try{
+        try {
+
             for (final ClusterMarker clusterMarker: clusterMarkers) {
 
                 DocumentReference userLocationRef = FirebaseFirestore.getInstance()
@@ -320,9 +367,32 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
                     }
                 });
             }
+            getLocations();
         } catch (IllegalStateException e) {
             Timber.e("retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage() );
         }
+    }
+
+    private void getLocations() {
+        Timber.d("Retrieving all locations");
+        List<UserLocation> locations = new ArrayList<>();
+
+        db.collection(getString(R.string.users_location_collection))
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<UserLocation> locationsGot = task.getResult().toObjects(UserLocation.class);
+                        locations.addAll(locationsGot);
+                        Timber.d("Final Location users, size = %d", locations.size());
+                        submitList(locations);
+                    }
+                })
+                .addOnFailureListener(e -> Timber.e("Failed to retrieve data"));
+    }
+
+    private void submitList(List<UserLocation> locations) {
+        Timber.d("Users locations size = %d", locations.size());
+        adapter.setLocations(locations);
     }
 
 }

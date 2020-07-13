@@ -112,5 +112,7 @@
     <string name="attention">Attention!</string>
     <string name="delete_question">Do you want to delete this event?</string>
     <string name="log_out">Log out</string>
+    <string name="drag">Drag</string>
+    <string name="remaining_times">Remaining times</string>
 
 </resources>

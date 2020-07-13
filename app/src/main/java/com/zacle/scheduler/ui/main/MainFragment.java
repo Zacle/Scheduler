@@ -72,8 +72,7 @@ public class MainFragment extends BaseFragment implements EventAdapter.OnItemCli
 
     private static final String TAG = "MainFragment";
 
-    private static final int ADD_EVENT_REQUEST = 1;
-    private static final int UPDATE_EVENT_REQUEST = 2;
+
     public static final int RC_SIGN_IN = 900;
     private static final int AUTOCOMPLETE_REQUEST_CODE_DESTINATION = 770;
 
