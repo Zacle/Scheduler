@@ -3,9 +3,7 @@ package com.zacle.scheduler.ui.addOrEdit;
 import android.app.Activity;
 import android.location.Address;
 import android.location.Geocoder;
-import android.widget.Toast;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.utils.AppConstants;
 import com.zacle.scheduler.utils.DateUtil;
@@ -106,17 +104,8 @@ public class AddEditEvent {
         this.notification_settings = notification_settings;
     }
 
-    public void showMessage(int resId) {
-        Toast.makeText(activity, activity.getString(resId), Toast.LENGTH_SHORT).show();
-    }
-
-    public void showSnackBar(int resId) {
-        Snackbar.make(activity.findViewById(android.R.id.content), resId, Snackbar.LENGTH_LONG).show();
-    }
-
     private void setDate() {
-        String time = DateUtil.formatDate(date);
-        Date formated = DateUtil.parseDate(time);
+        Date formated = new Date(date);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(formated);
         newYear = calendar.get(Calendar.YEAR);
@@ -125,8 +114,7 @@ public class AddEditEvent {
     }
 
     private void setTime() {
-        String time = DateUtil.formatTime(date);
-        Date formated = DateUtil.parseTime(time);
+        Date formated = new Date(date);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(formated);
         newHour = calendar.get(Calendar.HOUR_OF_DAY);

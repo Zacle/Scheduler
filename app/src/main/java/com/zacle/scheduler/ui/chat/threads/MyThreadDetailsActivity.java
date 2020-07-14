@@ -101,16 +101,7 @@ public class MyThreadDetailsActivity extends ThreadDetailsActivity {
         }
         collapsingToolbarLayout.setTitle(name);
 
-        if (!StringChecker.isNullOrEmpty(thread.getImageUrl())) {
-//            image.setOnClickListener(v -> zoomImageFromThumbnail(image, thread.getImageUrl()));
-            Glide.with(this)
-                    .load(thread.getImageUrl())
-                    .placeholder(R.drawable.profile_default)
-                    .centerCrop()
-                    .into(image);
-        } else {
-            image.setOnClickListener(null);
-        }
+        loadProfileImage();
 
         // CoreThread users bundle
         if (contactsFragment == null) {
@@ -119,6 +110,37 @@ public class MyThreadDetailsActivity extends ThreadDetailsActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_thread_details, contactsFragment).commit();
         } else {
             contactsFragment.loadData(false);
+        }
+    }
+
+    private void loadProfileImage() {
+        if (thread.typeIs(ThreadType.Private1to1)) {
+            List<User> threadUsers = thread.getUsers();
+            if (threadUsers.get(0).isMe()) {
+                Glide.with(this)
+                        .load(threadUsers.get(1).getAvatarURL())
+                        .placeholder(R.drawable.profile_default)
+                        .centerCrop()
+                        .into(image);
+            } else {
+                Glide.with(this)
+                        .load(threadUsers.get(0).getAvatarURL())
+                        .placeholder(R.drawable.profile_default)
+                        .centerCrop()
+                        .into(image);
+            }
+            image.setOnClickListener(null);
+        } else {
+            if (!StringChecker.isNullOrEmpty(thread.getImageUrl())) {
+//            image.setOnClickListener(v -> zoomImageFromThumbnail(image, thread.getImageUrl()));
+                Glide.with(this)
+                        .load(thread.getImageUrl())
+                        .placeholder(R.drawable.profile_default)
+                        .centerCrop()
+                        .into(image);
+            } else {
+                image.setOnClickListener(null);
+            }
         }
     }
 

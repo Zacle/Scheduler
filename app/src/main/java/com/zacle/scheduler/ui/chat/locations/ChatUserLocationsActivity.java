@@ -384,10 +384,24 @@ public class ChatUserLocationsActivity extends FragmentActivity implements OnMap
                         List<UserLocation> locationsGot = task.getResult().toObjects(UserLocation.class);
                         locations.addAll(locationsGot);
                         Timber.d("Final Location users, size = %d", locations.size());
-                        submitList(locations);
+                        filterUsers(locations);
                     }
                 })
                 .addOnFailureListener(e -> Timber.e("Failed to retrieve data"));
+    }
+
+    private void filterUsers(List<UserLocation> locations) {
+        List<UserLocation> users = new ArrayList<>();
+
+        for (final ClusterMarker clusterMarker: clusterMarkers) {
+            for (int i = 0; i < locations.size(); i++) {
+                if (clusterMarker.getUser().getId().equals(locations.get(i).getUser().getId())) {
+                    users.add(locations.get(i));
+                    break;
+                }
+            }
+        }
+        submitList(users);
     }
 
     private void submitList(List<UserLocation> locations) {

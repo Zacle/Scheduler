@@ -22,6 +22,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -194,6 +195,9 @@ public class LocationUpdatesService extends Service {
             NotificationChannel mChannel =
                     new NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT);
 
+            mChannel.setSound(null, null);
+            mChannel.setImportance(NotificationManager.IMPORTANCE_LOW);
+
             // Set the Notification Channel for the Notification Manager.
             mNotificationManager.createNotificationChannel(mChannel);
 
@@ -348,6 +352,7 @@ public class LocationUpdatesService extends Service {
                         servicePendingIntent)
                 .setContentText(notificationText)
                 .setContentTitle(Utils.getLocationTitle(this))
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.mipmap.ic_launcher)

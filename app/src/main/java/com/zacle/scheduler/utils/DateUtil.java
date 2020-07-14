@@ -35,7 +35,7 @@ public class DateUtil {
     }
 
     public static String formatTime(long date) {
-        String pattern = "hh:mm";
+        String pattern = "HH:mm";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String formatedDate = simpleDateFormat.format(date);
         return formatedDate;

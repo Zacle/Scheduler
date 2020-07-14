@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import com.zacle.scheduler.R;
 import com.zacle.scheduler.ui.main.MainActivity;
@@ -27,7 +28,9 @@ public class EventAlarmReceiver extends BroadcastReceiver {
         NotificationCompat.Builder builder = notificationHelper.getChannelNotification()
                 .setContentText(context.getString(R.string.alarm_notification))
                 .setContentTitle(name)
+                .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .addAction(goToEvent(context, id))
+                .addAction(cancelEvent(context, id))
                 .setAutoCancel(true);
         notificationHelper.getManager().notify(id, builder.build());
     }
@@ -41,11 +44,25 @@ public class EventAlarmReceiver extends BroadcastReceiver {
                 goToEventIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
-        NotificationCompat.Action action = new NotificationCompat.Action(
+        return new NotificationCompat.Action(
                 R.drawable.ic_alarm_on,
                 context.getString(R.string.geofence_ok_button),
                 pendingIntent
         );
-        return action;
+    }
+
+    private NotificationCompat.Action cancelEvent(Context context, int id) {
+        Intent cancelEventIntent = AlarmRemainderIntentService.startActionCancel(context, id);
+        PendingIntent pendingIntent = PendingIntent.getService(
+                context,
+                -1,
+                cancelEventIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
+        return new NotificationCompat.Action(
+                R.drawable.ic_alarm_off,
+                context.getString(R.string.no),
+                pendingIntent
+        );
     }
 }

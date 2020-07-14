@@ -114,5 +114,6 @@
     <string name="log_out">Log out</string>
     <string name="drag">Drag</string>
     <string name="remaining_times">Remaining times</string>
+    <string name="not_moved">Not moved yet</string>
 
 </resources>

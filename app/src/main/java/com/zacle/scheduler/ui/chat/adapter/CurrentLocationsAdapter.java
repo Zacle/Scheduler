@@ -90,13 +90,13 @@ public class CurrentLocationsAdapter extends RecyclerView.Adapter<CurrentLocatio
                 long timeLeft = location.getTime().getTime();
                 String duration = location.getDuration();
                 if (new Date().getTime() - timeLeft > TimeUnit.HOURS.toMillis(6)) {
-                    duration = "Not moved yet";
+                    duration = context.getString(R.string.not_moved);
                 } else if (location.getTimeLeft() <= TimeUnit.MINUTES.toSeconds(10)) {
-                    duration = "Arrived";
+                    duration = context.getString(R.string.user_arrived);
                 }
                 time.setText(duration);
             } else {
-                time.setText("Not moved yet");
+                time.setText(R.string.not_moved);
             }
         }
     }

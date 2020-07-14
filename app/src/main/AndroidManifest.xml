@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zacle.scheduler">
+
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -20,7 +21,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -35,15 +35,23 @@
 
         <activity
             android:name=".ui.chat.locations.ChatUserLocationsActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_chat_user_locations" />
         <activity
             android:name=".ui.map.RunningEventActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_running_event" />
         <activity
             android:name=".ui.addOrEdit.AddEditActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:parentActivityName=".ui.main.MainActivity" />
         <activity
             android:name=".ui.main.MainActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:label="@string/app_name"
             android:launchMode="singleTop">
             <intent-filter>
@@ -53,19 +61,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.base.BaseActivity" />
+        <activity android:name=".ui.base.BaseActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.chat.main.ChatMainActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:label="@string/action_chat"
             android:parentActivityName=".ui.main.MainActivity" />
-        <activity android:name=".ui.chat.main.MyMainAppBarActivity" />
+        <activity android:name=".ui.chat.main.MyMainAppBarActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.chat.threads.MyThreadDetailsActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:parentActivityName="co.chatsdk.ui.chat.ChatActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.exit.ExitActivity"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:autoRemoveFromRecents="true"/>
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -85,6 +98,9 @@
             android:enabled="true"
             android:exported="true"
             android:stopWithTask="true" />
+        <service
+            android:name=".service.alarm.AlarmRemainderIntentService"
+            android:exported="false" />
     </application>
 
 </manifest>

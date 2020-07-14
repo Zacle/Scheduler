@@ -59,7 +59,7 @@ public class SchedulerClusterManagerRender extends DefaultClusterRenderer<Cluste
                 .into(imageView);
 
         Bitmap icon = iconGenerator.makeIcon();
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(item.getTitle()).snippet(item.getSnippet());
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(item.getTitle());
     }
 
 
@@ -76,7 +76,6 @@ public class SchedulerClusterManagerRender extends DefaultClusterRenderer<Cluste
         Marker marker = getMarker(clusterMarker);
         if (marker != null) {
             marker.setPosition(clusterMarker.getPosition());
-            marker.setSnippet(clusterMarker.getSnippet());
         }
     }
 }
